@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Users, Briefcase, Star, Clock, MapPin, ArrowRight, CheckCircle } from "lucide-react";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,21 +122,21 @@ const Index = () => {
               <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link to="/find-talent" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Find Talent
-              </a>
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+              </Link>
+              <Link to="/find-work" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Find Work
-              </a>
-              <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+              </Link>
+              <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
                 About
-              </a>
-              <Button variant="outline" className="ml-4" onClick={() => navigate("/login")}>
+              </Link>
+              <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Log In
-              </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => navigate("/signup")}>
-                Sign Up
-              </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
+              </Link>
             </nav>
           </div>
         </div>
@@ -165,31 +165,28 @@ const Index = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     placeholder="Search for skills (e.g., React, Python, Design...)"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-12 text-lg border-gray-200 focus:border-blue-500"
                   />
                 </div>
 
                 {/* User Type Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button 
-                    size="lg" 
-                    className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold"
-                    onClick={() => navigate("/client-signup")}
-                  >
-                    <Users className="w-5 h-5 mr-2" />
-                    I'm a Client
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold"
-                    onClick={() => navigate("/freelancer-signup")}
-                  >
-                    <Briefcase className="w-5 h-5 mr-2" />
-                    I'm a Freelancer
-                  </Button>
+                  <Link to="/signup?type=client">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
+                      <Users className="w-5 h-5 mr-2" />
+                      I'm a Client
+                    </Button>
+                  </Link>
+                  <Link to="/signup?type=freelancer">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
+                    >
+                      <Briefcase className="w-5 h-5 mr-2" />
+                      I'm a Freelancer
+                    </Button>
+                  </Link>
                 </div>
               </div>
 

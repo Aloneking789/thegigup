@@ -11,6 +11,11 @@ import ClientDashboard from "./pages/ClientDashboard";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 import FreelancerProfileSetup from "./pages/FreelancerProfileSetup";
 import ClientProfileSetup from "./pages/ClientProfileSetup";
+import FindTalent from "./pages/FindTalent";
+import FindWork from "./pages/FindWork";
+import About from "./pages/About";
+import Profile from "./pages/Profile";
+import PostJob from "./pages/PostJob";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +37,11 @@ const App = () => (
           <Route path="/freelancer-profile-setup" element={<FreelancerProfileSetup />} />
           <Route path="/client-profile-setup" element={<ClientProfileSetup />} />
           <Route path="/dashboard" element={<ClientDashboard />} />
+          <Route path="/find-talent" element={<FindTalent />} />
+          <Route path="/find-work" element={<FindWork />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/post-job" element={<PostJob />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
