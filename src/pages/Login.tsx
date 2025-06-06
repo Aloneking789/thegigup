@@ -8,12 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,29 +32,31 @@ const Login = () => {
     setTimeout(() => {
       setIsLoading(false);
       toast({
-        title: "Login successful!",
-        description: "Welcome back to FreelanceHub",
+        title: "Welcome back!",
+        description: "You have been logged in successfully.",
       });
-      navigate("/dashboard");
+      
+      // For demo, navigate to client dashboard
+      navigate("/client-dashboard");
     }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <Briefcase className="w-8 h-8 text-blue-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              FreelanceHub
-            </h1>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Briefcase className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">FreelanceHub</h1>
           </Link>
         </div>
 
-        <Card className="shadow-xl border-0">
+        <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-gray-800">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
             <p className="text-gray-600">Sign in to your account</p>
           </CardHeader>
           
@@ -57,10 +68,11 @@ const Login = () => {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     type="email"
+                    name="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="pl-10 border-gray-200 focus:border-blue-500"
                     required
                   />
                 </div>
@@ -72,10 +84,11 @@ const Login = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     type={showPassword ? "text" : "password"}
+                    name="password"
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="pl-10 pr-10 border-gray-200 focus:border-blue-500"
                     required
                   />
                   <button
@@ -91,12 +104,12 @@ const Login = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input
-                    id="remember-me"
-                    name="remember-me"
+                    id="remember"
+                    name="remember"
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
                     Remember me
                   </label>
                 </div>
@@ -107,10 +120,10 @@ const Login = () => {
               
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3"
+                className="w-full bg-blue-600 hover:bg-blue-700 py-3"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
             

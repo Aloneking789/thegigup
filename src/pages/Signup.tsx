@@ -62,11 +62,11 @@ const Signup = () => {
         description: "Welcome to FreelanceHub",
       });
       
-      // Navigate based on role
+      // Navigate to profile setup based on role
       if (formData.role === "client") {
-        navigate("/client-dashboard");
+        navigate("/client-profile-setup");
       } else {
-        navigate("/freelancer-dashboard");
+        navigate("/freelancer-profile-setup");
       }
     }, 1000);
   };

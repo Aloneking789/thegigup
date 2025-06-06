@@ -2,438 +2,460 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
-  Briefcase, 
   Search, 
   Filter, 
+  Star, 
+  MapPin, 
   Clock, 
   DollarSign, 
-  Star,
-  MapPin,
+  Eye, 
+  Heart, 
+  Send,
+  Briefcase,
   User,
-  Award,
+  Calendar,
   TrendingUp,
-  Bell,
+  MessageSquare,
   Settings,
-  LogOut,
-  Plus,
-  FileText
+  FileText,
+  Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const mockJobs = [
+  {
+    id: 1,
+    title: "React Frontend Developer",
+    company: "TechStart Solutions",
+    location: "Remote",
+    budget: "₹50,000 - ₹75,000",
+    type: "Fixed Price",
+    description: "Looking for an experienced React developer to build a modern web application with TypeScript...",
+    skills: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
+    postedDate: "2024-01-15",
+    proposals: 12,
+    clientRating: 4.8,
+    isUrgent: true,
+    isExperienced: false
+  },
+  {
+    id: 2,
+    title: "UI/UX Designer for Mobile App",
+    company: "Creative Agency",
+    location: "Mumbai, India",
+    budget: "₹1,200/hour",
+    type: "Hourly",
+    description: "Need a creative designer to design user interface for a mobile application in fintech domain...",
+    skills: ["Figma", "UI Design", "Mobile Design", "Prototyping"],
+    postedDate: "2024-01-14",
+    proposals: 8,
+    clientRating: 4.9,
+    isUrgent: false,
+    isExperienced: true
+  },
+  {
+    id: 3,
+    title: "Full Stack Developer",
+    company: "E-commerce Startup",
+    location: "Bangalore, India",
+    budget: "₹80,000 - ₹120,000",
+    type: "Fixed Price",
+    description: "Build a complete e-commerce platform with modern tech stack including payment integration...",
+    skills: ["React", "Node.js", "MongoDB", "Stripe"],
+    postedDate: "2024-01-13",
+    proposals: 25,
+    clientRating: 4.7,
+    isUrgent: true,
+    isExperienced: true
+  }
+];
+
+const mockApplications = [
+  {
+    id: 1,
+    jobTitle: "React Frontend Developer",
+    company: "TechStart Solutions",
+    appliedDate: "2024-01-15",
+    status: "Under Review",
+    proposedRate: "₹65,000"
+  },
+  {
+    id: 2,
+    jobTitle: "Content Writer for Blog",
+    company: "Marketing Agency",
+    appliedDate: "2024-01-12",
+    status: "Shortlisted",
+    proposedRate: "₹500/hour"
+  }
+];
 
 const FreelancerDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("jobs");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [savedJobs, setSavedJobs] = useState<number[]>([]);
 
-  const jobListings = [
-    {
-      id: 1,
-      title: "React Developer for E-commerce Website",
-      client: "TechCorp Solutions",
-      budget: "₹20,000 - ₹35,000",
-      type: "Fixed Price",
-      deadline: "2 weeks",
-      posted: "2 hours ago",
-      location: "Remote",
-      skills: ["React", "Node.js", "MongoDB"],
-      tags: ["URGENT", "VERIFIED_CLIENT"],
-      description: "Looking for an experienced React developer to build a modern e-commerce platform..."
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer for Mobile App",
-      client: "StartupXYZ",
-      budget: "₹800/hr",
-      type: "Hourly",
-      deadline: "1 month",
-      posted: "5 hours ago",
-      location: "Bangalore",
-      skills: ["Figma", "Adobe XD", "Prototyping"],
-      tags: ["EXPERIENCED"],
-      description: "We need a creative UI/UX designer to design our mobile application..."
-    }
-  ];
-
-  const appliedJobs = [
-    {
-      id: 1,
-      title: "Full Stack Developer for SaaS Platform",
-      client: "InnovateTech",
-      status: "Under Review",
-      appliedDate: "3 days ago",
-      budget: "₹50,000"
-    },
-    {
-      id: 2,
-      title: "Frontend Developer - React",
-      client: "WebSolutions Inc",
-      status: "Interview Scheduled",
-      appliedDate: "1 week ago",
-      budget: "₹30,000"
-    }
-  ];
+  const toggleSaveJob = (jobId: number) => {
+    setSavedJobs(prev => 
+      prev.includes(jobId) 
+        ? prev.filter(id => id !== jobId)
+        : [...prev, jobId]
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2">
-                <Briefcase className="w-8 h-8 text-blue-600" />
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  FreelanceHub
-                </h1>
-              </Link>
-              <Badge className="bg-purple-100 text-purple-700">Freelancer</Badge>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
+              <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
             </div>
-            
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <Bell className="w-5 h-5" />
+              <Button variant="outline">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Messages
               </Button>
-              <Button variant="ghost" size="sm">
-                <Settings className="w-5 h-5" />
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
               </Button>
-              <Button variant="ghost" size="sm">
-                <LogOut className="w-5 h-5" />
-              </Button>
+              <Avatar>
+                <AvatarImage src="/placeholder.svg" />
+                <AvatarFallback>RP</AvatarFallback>
+              </Avatar>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-sm min-h-screen">
-          <nav className="p-6">
-            <div className="space-y-2">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === "overview" ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <TrendingUp className="w-5 h-5" />
-                  <span>Overview</span>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("jobs")}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === "jobs" ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Search className="w-5 h-5" />
-                  <span>Find Jobs</span>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("applied")}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === "applied" ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <FileText className="w-5 h-5" />
-                  <span>Applied Jobs</span>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                  activeTab === "profile" ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <User className="w-5 h-5" />
-                  <span>My Profile</span>
-                </div>
-              </button>
-            </div>
-          </nav>
-        </aside>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Freelancer Dashboard</h1>
+          <p className="text-gray-600">Find your next opportunity and manage your freelance career</p>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 p-6">
-          {activeTab === "overview" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Upgrade to Plus
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200">
+            <TabsTrigger value="jobs">Find Jobs</TabsTrigger>
+            <TabsTrigger value="applications">My Applications</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="earnings">Earnings</TabsTrigger>
+            <TabsTrigger value="contracts">Contracts</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="jobs" className="space-y-6">
+            {/* Search and Filters */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search jobs by title, skills, or company..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 border-gray-200 focus:border-blue-500"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="border-gray-200">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter
+                </Button>
+                <Button variant="outline" className="border-gray-200">
+                  Sort by: Latest
                 </Button>
               </div>
-
-              {/* Stats Cards */}
-              <div className="grid md:grid-cols-4 gap-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-gray-600">Profile Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-purple-600">85%</div>
-                    <Progress value={85} className="mt-2" />
-                    <p className="text-sm text-gray-500 mt-1">Complete your profile</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-gray-600">Jobs Applied</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">12</div>
-                    <p className="text-sm text-gray-500">This month</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-gray-600">Earnings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">₹45,000</div>
-                    <p className="text-sm text-gray-500">Last 30 days</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-gray-600">Rating</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center">
-                      <div className="text-2xl font-bold text-yellow-600">4.8</div>
-                      <Star className="w-5 h-5 text-yellow-400 fill-current ml-1" />
-                    </div>
-                    <p className="text-sm text-gray-500">Based on 15 reviews</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Button variant="outline" className="h-20 flex flex-col">
-                      <User className="w-6 h-6 mb-2" />
-                      Complete Profile
-                    </Button>
-                    <Button variant="outline" className="h-20 flex flex-col">
-                      <Plus className="w-6 h-6 mb-2" />
-                      Add Project
-                    </Button>
-                    <Button variant="outline" className="h-20 flex flex-col">
-                      <Award className="w-6 h-6 mb-2" />
-                      Get Verified
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Applications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Applications</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {appliedJobs.slice(0, 2).map((job) => (
-                    <div key={job.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{job.title}</h3>
-                        <Badge 
-                          variant={job.status === "Interview Scheduled" ? "default" : "secondary"}
-                          className={job.status === "Interview Scheduled" ? "bg-green-100 text-green-700" : ""}
-                        >
-                          {job.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Client: {job.client}</span>
-                        <span>Budget: {job.budget}</span>
-                        <span>Applied: {job.appliedDate}</span>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
             </div>
-          )}
 
-          {activeTab === "jobs" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Find Jobs</h2>
-                <div className="flex items-center space-x-2">
-                  <Input placeholder="Search jobs..." className="w-64" />
-                  <Button variant="outline">
-                    <Filter className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {jobListings.map((job) => (
-                  <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="font-semibold text-xl">{job.title}</h3>
-                            {job.tags.map((tag) => (
-                              <Badge 
-                                key={tag} 
-                                variant="secondary"
-                                className={
-                                  tag === "URGENT" ? "bg-red-100 text-red-700" :
-                                  tag === "VERIFIED_CLIENT" ? "bg-green-100 text-green-700" :
-                                  "bg-blue-100 text-blue-700"
-                                }
-                              >
-                                {tag.replace("_", " ")}
-                              </Badge>
-                            ))}
+            {/* Job Listings */}
+            <div className="grid gap-6">
+              {mockJobs.map((job) => (
+                <Card key={job.id} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                            {job.isUrgent && (
+                              <Badge className="bg-red-100 text-red-800">URGENT</Badge>
+                            )}
+                            {job.isExperienced && (
+                              <Badge className="bg-purple-100 text-purple-800">EXPERIENCED</Badge>
+                            )}
                           </div>
-                          
-                          <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                            <span className="flex items-center">
-                              <DollarSign className="w-4 h-4 mr-1" />
-                              {job.budget}
-                            </span>
-                            <span className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1" />
-                              {job.deadline}
-                            </span>
-                            <span className="flex items-center">
+                          <div className="flex items-center text-gray-600 text-sm space-x-4">
+                            <span className="font-medium">{job.company}</span>
+                            <div className="flex items-center">
                               <MapPin className="w-4 h-4 mr-1" />
-                              {job.location}
-                            </span>
-                            <span>Posted: {job.posted}</span>
-                          </div>
-                          
-                          <p className="text-gray-700 mb-4">{job.description}</p>
-                          
-                          <div className="flex flex-wrap gap-2">
-                            {job.skills.map((skill) => (
-                              <Badge key={skill} variant="outline">{skill}</Badge>
-                            ))}
+                              <span>{job.location}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              <span>Posted {new Date(job.postedDate).toLocaleDateString()}</span>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="ml-6">
-                          <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                            Apply Now
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="border-t pt-4">
-                        <p className="text-sm text-gray-600">Client: <span className="font-medium">{job.client}</span></p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "applied" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Applied Jobs</h2>
-              
-              <div className="space-y-4">
-                {appliedJobs.map((job) => (
-                  <Card key={job.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold text-lg">{job.title}</h3>
-                          <p className="text-gray-600">Client: {job.client}</p>
-                        </div>
-                        <Badge 
-                          variant={job.status === "Interview Scheduled" ? "default" : "secondary"}
-                          className={job.status === "Interview Scheduled" ? "bg-green-100 text-green-700" : ""}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSaveJob(job.id)}
+                          className={savedJobs.includes(job.id) ? "text-red-500" : "text-gray-400"}
                         >
-                          {job.status}
-                        </Badge>
+                          <Heart className={`w-4 h-4 ${savedJobs.includes(job.id) ? 'fill-current' : ''}`} />
+                        </Button>
                       </div>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <DollarSign className="w-4 h-4 mr-1" />
-                          {job.budget}
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          Applied: {job.appliedDate}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {activeTab === "profile" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">My Profile</h2>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center mb-6">
-                    <img
-                      src="/placeholder.svg"
-                      alt="Profile"
-                      className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-100"
-                    />
-                    <h3 className="text-xl font-semibold">John Doe</h3>
-                    <p className="text-gray-600">Full Stack Developer</p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                      <p className="text-gray-600">
-                        Experienced full stack developer with 5+ years of experience in React, Node.js, and modern web technologies.
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                      {/* Budget and Type */}
+                      <div className="flex items-center space-x-6">
+                        <div className="flex items-center">
+                          <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                          <span className="font-semibold text-gray-900">{job.budget}</span>
+                          <span className="text-gray-500 ml-1">({job.type})</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+                          <span>Client rating: {job.clientRating}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {job.proposals} proposals
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-gray-600 line-clamp-2">{job.description}</p>
+
+                      {/* Skills */}
                       <div className="flex flex-wrap gap-2">
-                        {["React", "Node.js", "TypeScript", "Python", "MongoDB"].map((skill) => (
-                          <Badge key={skill} variant="secondary" className="bg-purple-100 text-purple-700">
+                        {job.skills.map((skill) => (
+                          <Badge key={skill} variant="secondary" className="text-xs">
                             {skill}
                           </Badge>
                         ))}
                       </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <Button variant="outline" size="sm" className="border-gray-200">
+                          <Eye className="w-4 h-4 mr-1" />
+                          View Details
+                        </Button>
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          <Send className="w-4 h-4 mr-2" />
+                          Send Proposal
+                        </Button>
+                      </div>
                     </div>
-                    
-                    <div className="flex justify-center">
-                      <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                        Edit Profile
-                      </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="applications" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">My Applications</h2>
+              <div className="text-sm text-gray-600">
+                {mockApplications.length} applications submitted
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {mockApplications.map((application) => (
+                <Card key={application.id} className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-gray-900">{application.jobTitle}</h3>
+                        <p className="text-gray-600">{application.company}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            <span>Applied {new Date(application.appliedDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            <span>Proposed: {application.proposedRate}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge 
+                          className={
+                            application.status === "Shortlisted" 
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }
+                        >
+                          {application.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            {/* Profile Completion */}
+            <Card className="bg-white border-gray-200">
+              <CardHeader>
+                <CardTitle>Profile Completion</CardTitle>
+                <CardDescription>Complete your profile to get more opportunities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Profile Completion</span>
+                    <span className="text-sm text-gray-500">75%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      Basic information completed
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      Skills and bio added
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                      Add more portfolio projects
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full mr-2"></div>
+                      Get verified certifications
                     </div>
                   </div>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    Complete Profile
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Profile Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
+                  <Eye className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">127</div>
+                  <p className="text-xs text-gray-600">This month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Profile Rating</CardTitle>
+                  <Star className="h-4 w-4 text-yellow-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">4.9</div>
+                  <p className="text-xs text-gray-600">Based on 23 reviews</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">92%</div>
+                  <p className="text-xs text-gray-600">Project completion</p>
                 </CardContent>
               </Card>
             </div>
-          )}
-        </main>
+          </TabsContent>
+
+          <TabsContent value="earnings" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹2,45,000</div>
+                  <p className="text-xs text-gray-600">All time</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹45,000</div>
+                  <p className="text-xs text-gray-600">+15% from last month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Available</CardTitle>
+                  <Award className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹12,000</div>
+                  <p className="text-xs text-gray-600">Ready to withdraw</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Hourly Rate</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹1,200</div>
+                  <p className="text-xs text-gray-600">Average rate</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-white border-gray-200">
+              <CardHeader>
+                <CardTitle>Recent Payments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No recent payments to show</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contracts" className="space-y-6">
+            <div className="text-center py-12">
+              <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Active Contracts</h3>
+              <p className="text-gray-600 mb-6">You don't have any active contracts at the moment.</p>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Search className="w-4 h-4 mr-2" />
+                Find Your First Job
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
