@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -11,16 +11,15 @@ import {
   Send,
   Briefcase,
   Settings,
-  Star,
-  Users,
-  Calendar
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MobileNav from "@/components/MobileNav";
+import JobDetailModal from "@/components/JobDetailModal";
 
 const mockJobs = [
   {
@@ -62,9 +61,25 @@ const mockJobs = [
 ];
 
 const FindWork = () => {
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("latest");
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [showProposalForm, setShowProposalForm] = useState(false);
+
+  const handleViewDetails = (job: any) => {
+    setSelectedJob(job);
+    setShowProposalForm(false);
+    setIsJobModalOpen(true);
+  };
+
+  const handleSendProposal = (job: any) => {
+    setSelectedJob(job);
+    setShowProposalForm(true);
+    setIsJobModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -88,6 +103,7 @@ const FindWork = () => {
                 Settings
               </Button>
             </nav>
+            <MobileNav currentPath={location.pathname} />
           </div>
         </div>
       </header>
@@ -207,11 +223,19 @@ const FindWork = () => {
 
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <Button variant="outline" size="sm" className="border-gray-200">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-gray-200"
+                      onClick={() => handleViewDetails(job)}
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       View Details
                     </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={() => handleSendProposal(job)}
+                    >
                       <Send className="w-4 h-4 mr-2" />
                       Send Proposal
                     </Button>
@@ -222,6 +246,13 @@ const FindWork = () => {
           ))}
         </div>
       </div>
+
+      <JobDetailModal
+        job={selectedJob}
+        isOpen={isJobModalOpen}
+        onClose={() => setIsJobModalOpen(false)}
+        showProposalForm={showProposalForm}
+      />
     </div>
   );
 };

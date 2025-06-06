@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -18,6 +17,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MobileNav from "@/components/MobileNav";
+import FreelancerContactModal from "@/components/FreelancerContactModal";
 
 const mockFreelancers = [
   {
@@ -65,9 +66,17 @@ const mockFreelancers = [
 ];
 
 const FindTalent = () => {
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("rating");
+  const [selectedFreelancer, setSelectedFreelancer] = useState(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  const handleContactFreelancer = (freelancer: any) => {
+    setSelectedFreelancer(freelancer);
+    setIsContactModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -91,6 +100,7 @@ const FindTalent = () => {
                 Settings
               </Button>
             </nav>
+            <MobileNav currentPath={location.pathname} />
           </div>
         </div>
       </header>
@@ -196,7 +206,11 @@ const FindTalent = () => {
                       <Eye className="w-4 h-4 mr-1" />
                       View
                     </Button>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={() => handleContactFreelancer(freelancer)}
+                    >
                       <MessageSquare className="w-4 h-4 mr-1" />
                       Contact
                     </Button>
@@ -207,6 +221,12 @@ const FindTalent = () => {
           ))}
         </div>
       </div>
+
+      <FreelancerContactModal
+        freelancer={selectedFreelancer}
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+      />
     </div>
   );
 };

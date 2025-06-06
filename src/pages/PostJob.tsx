@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Briefcase,
   Settings,
@@ -8,7 +8,6 @@ import {
   ArrowRight,
   DollarSign,
   Clock,
-  Users,
   FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,9 +18,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import MobileNav from "@/components/MobileNav";
 
 const PostJob = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -61,8 +62,44 @@ const PostJob = () => {
     }));
   };
 
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        if (!formData.title || !formData.description || !formData.category || !formData.subcategory || formData.skills.length === 0) {
+          toast({
+            title: "Error",
+            description: "Please fill in all required fields in step 1.",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 2:
+        if (!formData.budget || !formData.timeframe) {
+          toast({
+            title: "Error",
+            description: "Please fill in budget and timeframe.",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      case 3:
+        if (!formData.projectType) {
+          toast({
+            title: "Error",
+            description: "Please select a project type.",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+    }
+    return true;
+  };
+
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (validateStep(currentStep) && currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -74,6 +111,8 @@ const PostJob = () => {
   };
 
   const handleSubmit = () => {
+    if (!validateStep(currentStep)) return;
+
     toast({
       title: "Job Posted Successfully!",
       description: "Your job has been posted and is now live for freelancers to apply.",
@@ -318,6 +357,7 @@ const PostJob = () => {
                 Settings
               </Button>
             </nav>
+            <MobileNav currentPath={location.pathname} />
           </div>
         </div>
       </header>
