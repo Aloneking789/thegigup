@@ -8,7 +8,7 @@ import { MessageSquare, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Freelancer {
-  id: number;
+  id: string;
   name: string;
   title: string;
   skills: string[];

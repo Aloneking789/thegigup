@@ -1,16 +1,18 @@
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Briefcase, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Briefcase, Mail, Lock, Eye, EyeOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { API_CONFIG, getApiUrl, setTokenByRole } from "@/lib/config/api";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    role: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,21 +26,83 @@ const Login = () => {
     });
   };
 
+  const handleRoleSelect = (role: string) => {
+    setFormData({ ...formData, role });
+  };
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.role) {
+      toast({
+        title: "Error",
+        description: "Please select your account type",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Welcome back!",
-        description: "You have been logged in successfully.",
-      });
+    try {
+      // Determine the API endpoint based on role
+      const endpoint = formData.role === "client" 
+        ? API_CONFIG.ENDPOINTS.CLIENT.LOGIN 
+        : API_CONFIG.ENDPOINTS.FREELANCER.LOGIN;
       
-      // For demo, navigate to client dashboard
-      navigate("/client-dashboard");
-    }, 1000);
+      const apiUrl = getApiUrl(endpoint);
+      
+      // Prepare login payload
+      const loginData = {
+        email: formData.email,
+        password: formData.password
+      };
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      const data = await response.json();
+      console.log(data.data.token);
+
+      if (response.ok) {
+        // Store token and role in localStorage
+        const role = formData.role.toUpperCase() as 'CLIENT' | 'FREELANCER';
+        
+        setTokenByRole(role, data.data.token);
+
+
+        toast({
+          title: "Welcome back!",
+          description: "You have been logged in successfully.",
+        });
+        
+        // Navigate to appropriate dashboard based on role
+        if (formData.role === "client") {
+          navigate("/client-dashboard");
+        } else {
+          navigate("/freelancer-dashboard");
+        }
+      } else {
+        toast({
+          title: "Login failed",
+          description: data.message || "Invalid email or password",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Network error",
+        description: "Unable to connect to the server. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -97,6 +161,37 @@ const Login = () => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>              </div>
+              
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">I am a:</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleRoleSelect("client")}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      formData.role === "client"
+                        ? "border-blue-600 bg-blue-50 text-blue-700"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <Users className="w-5 h-5 mx-auto mb-1" />
+                    <div className="text-sm font-medium">Client</div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => handleRoleSelect("freelancer")}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      formData.role === "freelancer"
+                        ? "border-purple-600 bg-purple-50 text-purple-700"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <Briefcase className="w-5 h-5 mx-auto mb-1" />
+                    <div className="text-sm font-medium">Freelancer</div>
                   </button>
                 </div>
               </div>

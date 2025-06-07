@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { API_CONFIG, getApiUrl, setTokenByRole } from "@/lib/config/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +31,6 @@ const Signup = () => {
   const handleRoleSelect = (role: string) => {
     setFormData({ ...formData, role });
   };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -54,21 +54,64 @@ const Signup = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to FreelanceHub",
-      });
+    try {
+      // Determine the API endpoint based on role
+      const endpoint = formData.role === "client" 
+        ? API_CONFIG.ENDPOINTS.CLIENT.SIGNUP 
+        : API_CONFIG.ENDPOINTS.FREELANCER.SIGNUP;
       
-      // Navigate to profile setup based on role
-      if (formData.role === "client") {
-        navigate("/client-profile-setup");
+      const apiUrl = getApiUrl(endpoint);
+      
+      // Prepare signup payload
+      const signupData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(signupData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and role in localStorage
+        const role = formData.role.toUpperCase() as 'CLIENT' | 'FREELANCER';
+        setTokenByRole(role, data.token);
+
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to FreelanceHub",
+        });
+        
+        // Navigate to profile setup based on role
+        if (formData.role === "client") {
+          navigate("/client-profile-setup");
+        } else {
+          navigate("/freelancer-profile-setup");
+        }
       } else {
-        navigate("/freelancer-profile-setup");
+        toast({
+          title: "Signup failed",
+          description: data.message || "An error occurred during signup",
+          variant: "destructive"
+        });
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: "Network error",
+        description: "Unable to connect to the server. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

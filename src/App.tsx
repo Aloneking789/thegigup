@@ -17,6 +17,9 @@ import About from "./pages/About";
 import Profile from "./pages/Profile";
 import PostJob from "./pages/PostJob";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import RoleBasedAccess from "./components/RoleBasedAccess";
 
 const queryClient = new QueryClient();
 
@@ -27,22 +30,125 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Routes - accessible to everyone */}
           <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/client-signup" element={<Signup />} />
-          <Route path="/freelancer-signup" element={<Signup />} />
-          <Route path="/client-dashboard" element={<ClientDashboard />} />
-          <Route path="/freelancer-dashboard" element={<FreelancerDashboard />} />
-          <Route path="/freelancer-profile-setup" element={<FreelancerProfileSetup />} />
-          <Route path="/client-profile-setup" element={<ClientProfileSetup />} />
-          <Route path="/dashboard" element={<ClientDashboard />} />
-          <Route path="/find-talent" element={<FindTalent />} />
-          <Route path="/find-work" element={<FindWork />} />
           <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/post-job" element={<PostJob />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Authentication Routes - only for non-authenticated users */}
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/client-signup" 
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/freelancer-signup" 
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            } 
+          />
+
+          {/* Client-Only Routes */}
+          <Route 
+            path="/client-dashboard" 
+            element={
+              <ProtectedRoute requiredRole="CLIENT">
+                <ClientDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/client-profile-setup" 
+            element={
+              <ProtectedRoute requiredRole="CLIENT">
+                <ClientProfileSetup />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/post-job" 
+            element={
+              <ProtectedRoute requiredRole="CLIENT">
+                <PostJob />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/find-talent" 
+            element={
+              <ProtectedRoute requiredRole="CLIENT">
+                <FindTalent />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Freelancer-Only Routes */}
+          <Route 
+            path="/freelancer-dashboard" 
+            element={
+              <ProtectedRoute requiredRole="FREELANCER">
+                <FreelancerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/freelancer-profile-setup" 
+            element={
+              <ProtectedRoute requiredRole="FREELANCER">
+                <FreelancerProfileSetup />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/find-work" 
+            element={
+              <ProtectedRoute requiredRole="FREELANCER">
+                <FindWork />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Mixed Access Routes - Both roles can access */}
+          <Route 
+            path="/profile" 
+            element={
+              <RoleBasedAccess allowedRoles={['CLIENT', 'FREELANCER']}>
+                <Profile />
+              </RoleBasedAccess>
+            } 
+          />
+
+          {/* Legacy/Redirect Routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute requiredRole="CLIENT" redirectTo="/client-dashboard">
+                <ClientDashboard />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

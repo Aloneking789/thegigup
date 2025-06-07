@@ -1,8 +1,9 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Briefcase,
-  Settings,
+  User,
+  LogOut,
   Users,
   Globe,
   Shield,
@@ -12,9 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import MobileNav from "@/components/MobileNav";
+import { isLoggedIn, logout } from "@/lib/config/api";
 
 const About = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -27,16 +35,34 @@ const About = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
+            </div>            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-gray-600 hover:text-blue-600">Find Work</Link>
               <Link to="/about" className="text-blue-600 font-medium">About</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+              {isLoggedIn() ? (
+                <>
+                  <Button variant="outline" asChild>
+                    <Link to="/profile">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" asChild>
+                    <Link to="/login">Login</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </nav>
             <MobileNav currentPath={location.pathname} />
           </div>

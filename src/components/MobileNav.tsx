@@ -1,9 +1,10 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Briefcase } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Briefcase, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { isLoggedIn, logout } from "@/lib/config/api";
 
 interface MobileNavProps {
   currentPath?: string;
@@ -11,6 +12,13 @@ interface MobileNavProps {
 
 const MobileNav = ({ currentPath }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setIsOpen(false);
+  };
 
   const navItems = [
     { path: "/find-talent", label: "Find Talent" },
@@ -48,11 +56,43 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                   onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
+                >                  {item.label}
                 </Link>
               ))}
             </nav>
+            
+            {/* Authentication Section */}
+            <div className="pt-4 border-t mt-4">
+              {isLoggedIn() ? (
+                <div className="space-y-2">
+                  <Link
+                    to="/profile"
+                    className="flex items-center p-3 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <User className="w-4 h-4 mr-3" />
+                    Profile
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/login" onClick={() => setIsOpen(false)}>Login</Link>
+                  </Button>
+                  <Button className="w-full" asChild>
+                    <Link to="/signup" onClick={() => setIsOpen(false)}>Sign Up</Link>
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>

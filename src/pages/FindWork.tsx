@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -11,7 +11,11 @@ import {
   Send,
   Briefcase,
   Settings,
-  Star
+  Star,
+  Loader2,
+  Users,
+  User,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,65 +24,108 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MobileNav from "@/components/MobileNav";
 import JobDetailModal from "@/components/JobDetailModal";
-
-const mockJobs = [
-  {
-    id: 1,
-    title: "React Frontend Developer",
-    company: "TechStart Solutions",
-    location: "Remote",
-    budget: "₹50,000 - ₹75,000",
-    type: "Fixed Price",
-    description: "Looking for an experienced React developer to build a modern web application with TypeScript and Tailwind CSS. The project involves creating a responsive dashboard with real-time data visualization.",
-    skills: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
-    postedDate: "2024-01-15",
-    proposals: 12,
-    clientRating: 4.8,
-    clientReviews: 23,
-    isUrgent: true,
-    isExperienced: false,
-    timePosted: "2 hours ago",
-    aboutClient: "TechStart Solutions is a growing startup focused on building innovative B2B solutions. We value quality code and collaborative teamwork."
-  },
-  {
-    id: 2,
-    title: "UI/UX Designer for Mobile App",
-    company: "Creative Agency",
-    location: "Mumbai, India",
-    budget: "₹1,200/hour",
-    type: "Hourly",
-    description: "Need a creative designer to design user interface for a mobile application in fintech domain. Must have experience with financial apps and modern design principles.",
-    skills: ["Figma", "UI Design", "Mobile Design", "Prototyping"],
-    postedDate: "2024-01-14",
-    proposals: 8,
-    clientRating: 4.9,
-    clientReviews: 45,
-    isUrgent: false,
-    isExperienced: true,
-    timePosted: "1 day ago",
-    aboutClient: "Creative Agency with 10+ years of experience in digital design. We work with Fortune 500 companies and emerging startups."
-  }
-];
+import { publicService } from "@/lib/api/client";
+import { PublicJob } from "@/lib/api/types";
+import { useToast } from "@/hooks/use-toast";
+import { isLoggedIn, logout } from "@/lib/config/api";
 
 const FindWork = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("latest");
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [showProposalForm, setShowProposalForm] = useState(false);
+  
+  // API state
+  const [jobs, setJobs] = useState<PublicJob[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  const handleViewDetails = (job: any) => {
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+  // Fetch jobs when filters change
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [debouncedSearchTerm, selectedCategory, sortBy]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [currentPage, debouncedSearchTerm, selectedCategory, sortBy]);
+  const fetchJobs = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const params = {
+        page: currentPage,
+        limit: 12,
+        query: debouncedSearchTerm,
+        skills: selectedCategory ? [selectedCategory] : undefined,
+      };
+
+      const response = await publicService.getJobs(params);
+      
+      if (response.success) {
+        setJobs(response.data.jobs);
+        setTotalResults(response.data.pagination.total);
+      } else {
+        setError('Failed to fetch jobs');
+      }
+    } catch (err) {
+      console.error('Error fetching jobs:', err);
+      setError('Failed to load jobs. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to load jobs. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
+  };
+
+  const handleViewDetails = (job: PublicJob) => {
     setSelectedJob(job);
     setShowProposalForm(false);
     setIsJobModalOpen(true);
   };
-
-  const handleSendProposal = (job: any) => {
+  const handleSendProposal = (job: PublicJob) => {
     setSelectedJob(job);
     setShowProposalForm(true);
     setIsJobModalOpen(true);
+  };
+
+  // Handle user logout
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -92,16 +139,33 @@ const FindWork = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
+            </div>            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-blue-600 font-medium">Find Work</Link>
               <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
-              <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+              {isLoggedIn() ? (
+                <div className="flex items-center space-x-4">
+                  <Link to="/profile">
+                    <Button variant="outline" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
+                    Log In
+                  </Link>
+                  <Link to="/signup">
+                    <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
+                  </Link>
+                </div>
+              )}
             </nav>
             <MobileNav currentPath={location.pathname} />
           </div>
@@ -151,13 +215,73 @@ const FindWork = () => {
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Filter className="w-4 h-4 mr-2" />
               Apply Filters
-            </Button>
-          </div>
+            </Button>          </div>
         </div>
+
+        {/* Results Summary */}
+        {!isLoading && !error && (
+          <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                {totalResults > 0 ? (
+                  <>
+                    Showing <span className="font-medium">{((currentPage - 1) * 12) + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(currentPage * 12, totalResults)}</span> of{' '}
+                    <span className="font-medium">{totalResults.toLocaleString()}</span> jobs
+                    {debouncedSearchTerm && (
+                      <span> for "<span className="font-medium">{debouncedSearchTerm}</span>"</span>
+                    )}
+                  </>
+                ) : (
+                  'No jobs found'
+                )}
+              </div>
+              {totalResults > 0 && (
+                <div className="text-sm text-gray-500">
+                  Page {currentPage} of {Math.ceil(totalResults / 12)}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Job Listings */}
         <div className="space-y-6">
-          {mockJobs.map((job) => (
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading jobs...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
+            <Card className="bg-red-50 border-red-200">
+              <CardContent className="p-6 text-center">
+                <p className="text-red-600">{error}</p>
+                <Button 
+                  onClick={fetchJobs} 
+                  className="mt-4"
+                  variant="outline"
+                >
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* No Results */}
+          {!isLoading && !error && jobs.length === 0 && (
+            <Card className="bg-gray-50 border-gray-200">
+              <CardContent className="p-6 text-center">
+                <p className="text-gray-600">No jobs found matching your criteria.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Job Cards */}
+          {!isLoading && !error && jobs.map((job) => (
             <Card key={job.id} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -166,49 +290,48 @@ const FindWork = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
-                        {job.isUrgent && (
-                          <Badge className="bg-red-100 text-red-800">URGENT</Badge>
-                        )}
-                        {job.isExperienced && (
-                          <Badge className="bg-purple-100 text-purple-800">EXPERIENCED</Badge>
-                        )}
                       </div>
                       <div className="flex items-center text-gray-600 text-sm space-x-4">
-                        <span className="font-medium">{job.company}</span>
+                        <span className="font-medium">{job.client.company}</span>
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />
-                          <span>{job.location}</span>
+                          <span>{job.client.location}</span>
                         </div>
                         <div className="flex items-center">
                           <Clock className="w-4 h-4 mr-1" />
-                          <span>{job.timePosted}</span>
+                          <span>{formatTimeAgo(job.postedAt)}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Budget and Type */}
+                  {/* Budget and Info */}
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-1 text-green-600" />
-                      <span className="font-semibold text-gray-900">{job.budget}</span>
-                      <span className="text-gray-500 ml-1">({job.type})</span>
+                      <span className="font-semibold text-gray-900">
+                        ${job.budget.min.toLocaleString()} - ${job.budget.max.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
-                      <span>Client rating: {job.clientRating} ({job.clientReviews} reviews)</span>
+                      <span>Client rating: {job.client.ratings.toFixed(1)}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-1" />
+                      <span>{job.applicationsCount} proposal{job.applicationsCount !== 1 ? 's' : ''}</span>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {job.proposals} proposals
+                      Duration: {job.duration}
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-gray-600">{job.description}</p>
+                  <p className="text-gray-600 line-clamp-3">{job.description}</p>
 
                   {/* Skills */}
                   <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill) => (
+                    {job.skillsRequired.map((skill) => (
                       <Badge key={skill} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
@@ -218,7 +341,11 @@ const FindWork = () => {
                   {/* About Client */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-medium text-gray-900 mb-2">About the Client</h4>
-                    <p className="text-sm text-gray-600">{job.aboutClient}</p>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p><span className="font-medium">Company:</span> {job.client.company}</p>
+                      <p><span className="font-medium">Industry:</span> {job.client.industry}</p>
+                      <p><span className="font-medium">Location:</span> {job.client.location}</p>
+                    </div>
                   </div>
 
                   {/* Actions */}
@@ -242,8 +369,37 @@ const FindWork = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>          ))}
+
+          {/* Pagination */}
+          {!isLoading && !error && jobs.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 p-6 bg-white rounded-lg border">
+              <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+                Showing {jobs.length} of {totalResults.toLocaleString()} jobs
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600 px-3">
+                  Page {currentPage}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={jobs.length < 12}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
