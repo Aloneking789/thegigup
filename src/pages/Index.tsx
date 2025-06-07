@@ -193,13 +193,11 @@ const Index = () => {
                   <div className="text-gray-600">Client Satisfaction</div>
                 </div>
               </div>
-            </div>
-
-            <div className="relative">
+            </div>            <div className="relative">
               <div className="relative z-10">
                 <img
-                  src="/placeholder.svg?height=600&width=500"
-                  alt="Freelancer working"
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
+                  alt="Team collaboration and freelance work"
                   className="rounded-2xl shadow-2xl w-full h-auto"
                 />
               </div>
