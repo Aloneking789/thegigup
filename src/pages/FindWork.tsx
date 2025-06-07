@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -13,9 +13,7 @@ import {
   Settings,
   Star,
   Loader2,
-  Users,
-  User,
-  LogOut
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +25,9 @@ import JobDetailModal from "@/components/JobDetailModal";
 import { publicService } from "@/lib/api/client";
 import { PublicJob } from "@/lib/api/types";
 import { useToast } from "@/hooks/use-toast";
-import { isLoggedIn, logout } from "@/lib/config/api";
 
 const FindWork = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -116,16 +112,11 @@ const FindWork = () => {
     setShowProposalForm(false);
     setIsJobModalOpen(true);
   };
+
   const handleSendProposal = (job: PublicJob) => {
     setSelectedJob(job);
     setShowProposalForm(true);
     setIsJobModalOpen(true);
-  };
-
-  // Handle user logout
-  const handleLogout = () => {
-    logout();
-    navigate('/');
   };
 
   return (
@@ -139,33 +130,16 @@ const FindWork = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>            <nav className="hidden md:flex items-center space-x-6">
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-blue-600 font-medium">Find Work</Link>
               <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
-              {isLoggedIn() ? (
-                <div className="flex items-center space-x-4">
-                  <Link to="/profile">
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
-                    Log In
-                  </Link>
-                  <Link to="/signup">
-                    <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
-                  </Link>
-                </div>
-              )}
+              <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
             </nav>
             <MobileNav currentPath={location.pathname} />
           </div>

@@ -5,9 +5,7 @@ import {
   Briefcase,
   Settings,
   FileText,
-  DollarSign,
-  User,
-  LogOut
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { clientService } from "@/lib/api/client";
-import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
+import { isLoggedIn, RoleStorage } from "@/lib/config/api";
 import MobileNav from "@/components/MobileNav";
 
 const PostJob = () => {
@@ -46,6 +44,7 @@ const PostJob = () => {
     navigate('/login');
     return null;
   }
+
   const handleSkillToggle = (skill: string) => {
     setFormData(prev => ({
       ...prev,
@@ -53,12 +52,6 @@ const PostJob = () => {
         ? prev.skills.filter(s => s !== skill)
         : [...prev.skills, skill]
     }));
-  };
-
-  // Handle user logout
-  const handleLogout = () => {
-    logout();
-    navigate('/');
   };
 
   const validateForm = () => {
@@ -179,32 +172,15 @@ const PostJob = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>            <nav className="hidden md:flex items-center space-x-6">
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/client-dashboard" className="text-gray-600 hover:text-blue-600">Dashboard</Link>
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
-              {isLoggedIn() ? (
-                <div className="flex items-center space-x-4">
-                  <Link to="/profile">
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
-                    Log In
-                  </Link>
-                  <Link to="/signup">
-                    <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
-                  </Link>
-                </div>
-              )}
+              <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
             </nav>
             <MobileNav currentPath={location.pathname} />
           </div>

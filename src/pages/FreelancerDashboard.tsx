@@ -105,6 +105,7 @@ const FreelancerDashboard = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
   // Calculate profile completion percentage based on actual data
   const calculateProfileCompletion = (profile: FreelancerProfile | null) => {
     if (!profile) return 0;
@@ -112,8 +113,8 @@ const FreelancerDashboard = () => {
     let completedFields = 0;
     const totalFields = 5;
     
-    // Check name and bio (basic info)
-    if (profile.name && profile.bio) completedFields++;
+    // Check title and overview (basic info)
+    if (profile.title && profile.overview) completedFields++;
     
     // Check skills
     if (profile.skills && profile.skills.length > 0) completedFields++;
@@ -426,11 +427,12 @@ const FreelancerDashboard = () => {
                       className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
                       style={{ width: `${profileCompletion}%` }}
                     ></div>
-                  </div>                  <Button 
+                  </div>
+                  <Button 
                     onClick={handleCompleteProfile}
                     className="bg-blue-600 hover:bg-blue-700 px-8 py-3"
                   >
-                    {profileCompletion >= 90 ? 'Edit Profile' : 'Complete Profile Now'}
+                    Complete Profile Now
                   </Button>
                 </CardContent>
               </Card>
@@ -771,11 +773,12 @@ const FreelancerDashboard = () => {
                       style={{ width: `${profileCompletion}%` }}
                     ></div>
                   </div>
-                  <div className="space-y-2 text-sm text-gray-600">                    <div className="flex items-center">
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
-                        profile?.name && profile?.bio ? 'bg-green-500' : 'bg-gray-300'
+                        profile?.title && profile?.overview ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Basic information (name & bio) {profile?.name && profile?.bio ? 'completed' : 'needed'}
+                      Basic information (title & overview) {profile?.title && profile?.overview ? 'completed' : 'needed'}
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${

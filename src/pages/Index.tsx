@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Users, Briefcase, Star, Clock, MapPin, ArrowRight, CheckCircle, User, LogOut } from "lucide-react";
+import { Search, Users, Briefcase, Star, Clock, MapPin, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { publicService } from "@/lib/api/client";
 import { FeaturedProject, FeaturedFreelancer } from "@/lib/api/types";
-import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
+import { isLoggedIn, RoleStorage } from "@/lib/config/api";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +24,7 @@ const Index = () => {
   useEffect(() => {
     setUserLoggedIn(isLoggedIn());
   }, []);
+
   // Get appropriate dashboard route based on user role
   const getDashboardRoute = (): string => {
     if (RoleStorage.isClient()) {
@@ -32,13 +33,6 @@ const Index = () => {
       return "/freelancer-dashboard";
     }
     return "/login"; // fallback if no role found
-  };
-
-  // Handle user logout
-  const handleLogout = () => {
-    logout();
-    setUserLoggedIn(false);
-    navigate('/');
   };
 
   // Fetch featured freelancers
@@ -90,7 +84,8 @@ const Index = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
-            </div>            <nav className="hidden md:flex items-center space-x-6">
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Find Talent
               </Link>
@@ -99,32 +94,13 @@ const Index = () => {
               </Link>
               <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
                 About
-              </Link>              {userLoggedIn ? (
-                <div className="flex items-center space-x-4">
-                  <Link to={getDashboardRoute()}>
-                    <Button className="bg-blue-600 hover:bg-blue-700">Dashboard</Button>
-                  </Link>
-                  <Link to="/profile">
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
-                    Log In
-                  </Link>
-                  <Link to="/signup">
-                    <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
-                  </Link>
-                </>
-              )}
+              </Link>
+              <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">
+                Log In
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
+              </Link>
             </nav>
           </div>
         </div>
@@ -193,11 +169,13 @@ const Index = () => {
                   <div className="text-gray-600">Client Satisfaction</div>
                 </div>
               </div>
-            </div>            <div className="relative">
+            </div>
+
+            <div className="relative">
               <div className="relative z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
-                  alt="Team collaboration and freelance work"
+                  src="/placeholder.svg?height=600&width=500"
+                  alt="Freelancer working"
                   className="rounded-2xl shadow-2xl w-full h-auto"
                 />
               </div>
