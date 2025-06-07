@@ -55,7 +55,7 @@ export const freelancerService = {
     const formData = new FormData();
     formData.append('profilePicture', file);
 
-    const response = await apiClientMultipart.post<ApiResponse<{ profilePicture: string }>>(
+    const response = await apiClientMultipart.put<ApiResponse<{ profilePicture: string }>>(
       '/freelancer/profile/picture',
       formData
     );

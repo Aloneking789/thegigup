@@ -105,27 +105,35 @@ const FreelancerDashboard = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
-
   // Calculate profile completion percentage based on actual data
   const calculateProfileCompletion = (profile: FreelancerProfile | null) => {
     if (!profile) return 0;
     
     let completedFields = 0;
-    const totalFields = 5;
+    const totalFields = 8; // Updated to match new API fields
     
-    // Check title and overview (basic info)
-    if (profile.title && profile.overview) completedFields++;
+    // Check name
+    if (profile.name) completedFields++;
     
-    // Check skills
-    if (profile.skills && profile.skills.length > 0) completedFields++;
-    
-    // Check hourly rate and experience
-    if (profile.hourlyRate && profile.experience) completedFields++;
+    // Check bio
+    if (profile.bio) completedFields++;
     
     // Check location
     if (profile.location) completedFields++;
     
-    // Check professional links
+    // Check age
+    if (profile.age) completedFields++;
+    
+    // Check skills
+    if (profile.skills && profile.skills.length > 0) completedFields++;
+    
+    // Check experience
+    if (profile.experience) completedFields++;
+    
+    // Check hourly rate
+    if (profile.hourlyRate) completedFields++;
+    
+    // Check professional links (at least one)
     if (profile.linkedinUrl || profile.portfolioUrl || profile.githubUrl) completedFields++;
     
     return Math.round((completedFields / totalFields) * 100);
@@ -140,63 +148,73 @@ const FreelancerDashboard = () => {
     const fetchProfile = async () => {
       try {
         setIsLoadingProfile(true);
-        setProfileError(null);
-        
-        // Try to fetch real profile data
+        setProfileError(null);        // Try to fetch real profile data
         try {
           const response = await freelancerService.getProfile();
           if (response.success && response.data) {
+            const profileData = response.data;
+            const freelancerData = profileData.freelancer;
+            
             // Map the API response to FreelancerProfile format
-            const freelancerData = response.data.freelancer;
             const mappedProfile: FreelancerProfile = {
-              id: freelancerData.id,
-              userId: freelancerData.userId,
-              title: '', // Not provided in API response
-              overview: '', // Not provided in API response
-              skills: freelancerData.skills,
-              hourlyRate: freelancerData.hourlyRate,
-              location: '', // Not provided in API response
-              languages: [], // Not provided in API response
-              education: [], // Not provided in API response
-              experience: freelancerData.experience,
-              portfolio: [], // Not provided in API response
-              githubUrl: freelancerData.githubUrl,
-              linkedinUrl: freelancerData.linkedinUrl,
-              portfolioUrl: freelancerData.portfolioUrl,
-              age: freelancerData.age,
-              availability: freelancerData.availability,
-              resume: '', // Not provided in API response
+              id: profileData.id || '',
+              userId: freelancerData?.userId || '',
+              // New simplified fields from the nested freelancer object
+              name: profileData.name || '',
+              bio: profileData.bio || '',
+              location: profileData.location || '',
+              age: freelancerData?.age || 0,
+              skills: freelancerData?.skills || [],
+              experience: freelancerData?.experience || '',
+              hourlyRate: freelancerData?.hourlyRate || 0,
+              availability: freelancerData?.availability || false,
+              githubUrl: freelancerData?.githubUrl || '',
+              linkedinUrl: freelancerData?.linkedinUrl || '',
+              portfolioUrl: freelancerData?.portfolioUrl || '',
+              // Legacy fields for compatibility
+              title: '',
+              overview: profileData.bio || '',
+              languages: [],
+              education: [],
+              portfolio: [],
+              resume: '',
               completionStatus: {
-                basicInfo: false,
-                skills: false,
-                experience: false,
+                basicInfo: !!(profileData.name) && !!(profileData.bio),
+                skills: !!(freelancerData?.skills && freelancerData.skills.length > 0),
+                experience: !!freelancerData?.experience,
                 education: false,
                 portfolio: false
               },
-              createdAt: '',
-              updatedAt: ''
+              createdAt: profileData.createdAt || '',
+              updatedAt: profileData.updatedAt || ''
             };
             setProfile(mappedProfile);
           } else {
             throw new Error('Profile not found');
-          }
-        } catch (error) {
+          }} catch (error) {
           // Fallback to mock profile data if API fails
           console.log('Using mock profile data:', error);
           const mockProfile: FreelancerProfile = {
             id: "1",
             userId: "1",
+            name: "John Doe",
+            bio: "Experienced developer with 5+ years in web development",
+            location: "Mumbai, India",
+            age: 28,
+            skills: ["React", "TypeScript", "Node.js", "Python"],
+            experience: "5 years",
+            hourlyRate: 75,
+            availability: true,
+            githubUrl: "https://github.com/johndoe",
+            linkedinUrl: "https://linkedin.com/in/johndoe",
+            portfolioUrl: "https://johndoe.dev",
+            // Legacy fields for compatibility
             title: "Full Stack Developer",
             overview: "Experienced developer with 5+ years in web development",
-            skills: ["React", "TypeScript", "Node.js", "Python"],
-            hourlyRate: 75,
-            location: "Remote",
             languages: ["English", "Hindi"],
             education: [],
-            experience: "5 years",
             portfolio: [],
             resume: "",
-            availability: true,
             completionStatus: {
               basicInfo: true,
               skills: true,
@@ -772,13 +790,24 @@ const FreelancerDashboard = () => {
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
                       style={{ width: `${profileCompletion}%` }}
                     ></div>
-                  </div>
-                  <div className="space-y-2 text-sm text-gray-600">
+                  </div>                  <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
-                        profile?.title && profile?.overview ? 'bg-green-500' : 'bg-gray-300'
+                        profile?.name && profile?.bio ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Basic information (title & overview) {profile?.title && profile?.overview ? 'completed' : 'needed'}
+                      Basic information (name & bio) {profile?.name && profile?.bio ? 'completed' : 'needed'}
+                    </div>
+                    <div className="flex items-center">
+                      <div className={`w-2 h-2 rounded-full mr-2 ${
+                        profile?.location ? 'bg-green-500' : 'bg-gray-300'
+                      }`}></div>
+                      Location {profile?.location ? 'added' : 'needed'}
+                    </div>
+                    <div className="flex items-center">
+                      <div className={`w-2 h-2 rounded-full mr-2 ${
+                        profile?.age ? 'bg-green-500' : 'bg-gray-300'
+                      }`}></div>
+                      Age {profile?.age ? 'added' : 'optional'}
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
@@ -788,15 +817,15 @@ const FreelancerDashboard = () => {
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
-                        profile?.hourlyRate && profile?.experience ? 'bg-green-500' : 'bg-gray-300'
+                        profile?.experience ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Rate & experience {profile?.hourlyRate && profile?.experience ? 'completed' : 'needed'}
+                      Experience {profile?.experience ? 'added' : 'needed'}
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
-                        profile?.location ? 'bg-green-500' : 'bg-gray-300'
+                        profile?.hourlyRate ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Location {profile?.location ? 'added' : 'needed'}
+                      Hourly rate {profile?.hourlyRate ? 'set' : 'needed'}
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
@@ -860,7 +889,7 @@ const FreelancerDashboard = () => {
                   <DollarSign className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">₹2,45,000</div>
+                  <div className="text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">All time</p>
                 </CardContent>
               </Card>
@@ -871,7 +900,7 @@ const FreelancerDashboard = () => {
                   <Calendar className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">₹45,000</div>
+                  <div className="text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">+15% from last month</p>
                 </CardContent>
               </Card>
@@ -882,18 +911,18 @@ const FreelancerDashboard = () => {
                   <Award className="h-4 w-4 text-purple-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">₹12,000</div>
+                  <div className="text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">Ready to withdraw</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Hourly Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium">Average Rate</CardTitle>
                   <Clock className="h-4 w-4 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">₹1,200</div>
+                  <div className="text-2xl font-bold">₹00</div>
                   <p className="text-xs text-gray-600">Average rate</p>
                 </CardContent>
               </Card>
