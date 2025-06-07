@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { authAPI, tokenManager } from "@/utils/api";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    role: "client" // Default to client
+    password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,61 +24,21 @@ const Login = () => {
     });
   };
 
-  const handleRoleChange = (role: string) => {
-    setFormData({ ...formData, role });
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const loginData = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      let response;
-      if (formData.role === "client") {
-        response = await authAPI.clientLogin(loginData);
-      } else {
-        response = await authAPI.freelancerLogin(loginData);
-      }
-
-      if (response.success) {
-        // Store token and user data
-        tokenManager.setToken(response.data.token);
-        tokenManager.setUserRole(response.data.user.role);
-        tokenManager.setUserData(response.data.user);
-
-        toast({
-          title: "Welcome back!",
-          description: response.message,
-        });
-        
-        // Navigate based on role
-        if (response.data.user.role === "CLIENT") {
-          navigate("/client-dashboard");
-        } else {
-          navigate("/freelancer-dashboard");
-        }
-      } else {
-        toast({
-          title: "Login Failed",
-          description: response.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login Failed",
-        description: "An error occurred during login. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      toast({
+        title: "Welcome back!",
+        description: "You have been logged in successfully.",
+      });
+      
+      // For demo, navigate to client dashboard
+      navigate("/client-dashboard");
+    }, 1000);
   };
 
   return (
@@ -104,36 +62,6 @@ const Login = () => {
           
           <CardContent className="space-y-6">
             <form onSubmit={handleLogin} className="space-y-4">
-              {/* Role Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">Login as:</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleRoleChange("client")}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      formData.role === "client"
-                        ? "border-blue-600 bg-blue-50 text-blue-700"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="text-sm font-medium">Client</div>
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => handleRoleChange("freelancer")}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      formData.role === "freelancer"
-                        ? "border-slate-600 bg-slate-50 text-slate-700"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="text-sm font-medium">Freelancer</div>
-                  </button>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Email</label>
                 <div className="relative">

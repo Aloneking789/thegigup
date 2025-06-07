@@ -1,13 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Briefcase, Mail, Lock, User, Users, Eye, EyeOff, Building, Globe, MapPin } from "lucide-react";
+import { Briefcase, Mail, Lock, User, Users, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { authAPI, tokenManager } from "@/utils/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -15,20 +13,14 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
-    // Client specific fields
-    companyName: "",
-    industry: "",
-    website: "",
-    bio: "",
-    location: ""
+    role: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -62,74 +54,31 @@ const Signup = () => {
 
     setIsLoading(true);
 
-    try {
-      let response;
-      
-      if (formData.role === "client") {
-        const clientData = {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          companyName: formData.companyName,
-          industry: formData.industry,
-          website: formData.website,
-          bio: formData.bio,
-          location: formData.location
-        };
-        response = await authAPI.clientSignup(clientData);
-      } else {
-        const freelancerData = {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        };
-        response = await authAPI.freelancerSignup(freelancerData);
-      }
-
-      if (response.success) {
-        // Store token and user data
-        tokenManager.setToken(response.data.token);
-        tokenManager.setUserRole(response.data.user.role);
-        tokenManager.setUserData(response.data.user);
-
-        toast({
-          title: "Account created successfully!",
-          description: response.message,
-        });
-        
-        // Navigate to profile setup based on role
-        if (formData.role === "client") {
-          navigate("/client-profile-setup");
-        } else {
-          navigate("/freelancer-profile-setup");
-        }
-      } else {
-        toast({
-          title: "Signup Failed",
-          description: response.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Signup Failed",
-        description: "An error occurred during signup. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to FreelanceHub",
+      });
+      
+      // Navigate to profile setup based on role
+      if (formData.role === "client") {
+        navigate("/client-profile-setup");
+      } else {
+        navigate("/freelancer-profile-setup");
+      }
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <Briefcase className="w-8 h-8 text-blue-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-slate-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               FreelanceHub
             </h1>
           </Link>
@@ -237,7 +186,7 @@ const Signup = () => {
                     onClick={() => handleRoleSelect("freelancer")}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       formData.role === "freelancer"
-                        ? "border-slate-600 bg-slate-50 text-slate-700"
+                        ? "border-purple-600 bg-purple-50 text-purple-700"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -247,85 +196,6 @@ const Signup = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Client-specific fields */}
-              {formData.role === "client" && (
-                <div className="space-y-4 border-t pt-4">
-                  <h3 className="text-lg font-medium text-gray-800">Company Information</h3>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Company Name</label>
-                    <div className="relative">
-                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        type="text"
-                        name="companyName"
-                        placeholder="Your company name"
-                        value={formData.companyName}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Industry</label>
-                    <Input
-                      type="text"
-                      name="industry"
-                      placeholder="e.g., Technology, Healthcare, Finance"
-                      value={formData.industry}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Website</label>
-                    <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        type="url"
-                        name="website"
-                        placeholder="https://yourcompany.com"
-                        value={formData.website}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Location</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        type="text"
-                        name="location"
-                        placeholder="City, Country"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Company Bio</label>
-                    <Textarea
-                      name="bio"
-                      placeholder="Tell us about your company..."
-                      value={formData.bio}
-                      onChange={handleInputChange}
-                      rows={3}
-                      required
-                    />
-                  </div>
-                </div>
-              )}
               
               <div className="flex items-center">
                 <input
@@ -349,7 +219,7 @@ const Signup = () => {
               
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-slate-600 hover:from-blue-700 hover:to-slate-700 py-3"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
