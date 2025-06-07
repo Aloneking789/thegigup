@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Plus, 
   Search, 
@@ -90,6 +89,20 @@ const mockApplicants = [
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
+  const handlePostNewJob = () => {
+    navigate("/post-job");
+  };
+
+  const handleBrowseFreelancers = () => {
+    navigate("/find-talent");
+  };
+
+  const handleViewMessages = () => {
+    // For now, just show an alert - in a real app this would navigate to messages
+    alert("Messages functionality would be implemented here");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -104,7 +117,7 @@ const ClientDashboard = () => {
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleViewMessages}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Messages
               </Button>
@@ -191,15 +204,26 @@ const ClientDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button className="h-auto p-6 bg-blue-600 hover:bg-blue-700 flex-col space-y-2">
+                  <Button 
+                    onClick={handlePostNewJob}
+                    className="h-auto p-6 bg-blue-600 hover:bg-blue-700 flex-col space-y-2"
+                  >
                     <Plus className="w-6 h-6" />
                     <span>Post New Job</span>
                   </Button>
-                  <Button variant="outline" className="h-auto p-6 flex-col space-y-2 border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleBrowseFreelancers}
+                    className="h-auto p-6 flex-col space-y-2 border-gray-200"
+                  >
                     <Search className="w-6 h-6" />
                     <span>Browse Freelancers</span>
                   </Button>
-                  <Button variant="outline" className="h-auto p-6 flex-col space-y-2 border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleViewMessages}
+                    className="h-auto p-6 flex-col space-y-2 border-gray-200"
+                  >
                     <MessageSquare className="w-6 h-6" />
                     <span>View Messages</span>
                   </Button>
@@ -251,7 +275,7 @@ const ClientDashboard = () => {
                   Filter
                 </Button>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handlePostNewJob} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Post New Job
               </Button>

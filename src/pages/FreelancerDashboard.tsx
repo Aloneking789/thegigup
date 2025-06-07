@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -26,6 +25,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const mockJobs = [
   {
@@ -94,10 +96,37 @@ const mockApplications = [
   }
 ];
 
+const mockContracts = [
+  {
+    id: 1,
+    title: "E-commerce Website Development",
+    client: "Online Store Co.",
+    status: "Active",
+    budget: "₹75,000",
+    startDate: "2024-01-10",
+    deadline: "2024-02-15",
+    progress: 65
+  },
+  {
+    id: 2,
+    title: "Mobile App UI Design",
+    client: "StartupTech",
+    status: "Completed",
+    budget: "₹45,000",
+    startDate: "2023-12-01",
+    deadline: "2024-01-05",
+    progress: 100
+  }
+];
+
 const FreelancerDashboard = () => {
   const [activeTab, setActiveTab] = useState("jobs");
   const [searchTerm, setSearchTerm] = useState("");
   const [savedJobs, setSavedJobs] = useState<number[]>([]);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [proposalText, setProposalText] = useState("");
+  const [proposalRate, setProposalRate] = useState("");
+  const { toast } = useToast();
 
   const toggleSaveJob = (jobId: number) => {
     setSavedJobs(prev => 
@@ -105,6 +134,30 @@ const FreelancerDashboard = () => {
         ? prev.filter(id => id !== jobId)
         : [...prev, jobId]
     );
+  };
+
+  const handleSendProposal = () => {
+    if (!proposalText || !proposalRate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all proposal details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Proposal Sent!",
+      description: `Your proposal for "${selectedJob?.title}" has been submitted successfully.`,
+    });
+    
+    setProposalText("");
+    setProposalRate("");
+    setSelectedJob(null);
+  };
+
+  const handleViewDetails = (job: any) => {
+    setSelectedJob(job);
   };
 
   return (
@@ -245,14 +298,86 @@ const FreelancerDashboard = () => {
 
                       {/* Actions */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <Button variant="outline" size="sm" className="border-gray-200">
-                          <Eye className="w-4 h-4 mr-1" />
-                          View Details
-                        </Button>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                          <Send className="w-4 h-4 mr-2" />
-                          Send Proposal
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-gray-200"
+                              onClick={() => handleViewDetails(job)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>{selectedJob?.title}</DialogTitle>
+                              <DialogDescription>{selectedJob?.company}</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <p className="text-gray-600">{selectedJob?.description}</p>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h4 className="font-semibold mb-2">Budget</h4>
+                                  <p>{selectedJob?.budget} ({selectedJob?.type})</p>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold mb-2">Skills Required</h4>
+                                  <div className="flex flex-wrap gap-1">
+                                    {selectedJob?.skills?.map((skill: string) => (
+                                      <Badge key={skill} variant="secondary" className="text-xs">
+                                        {skill}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              className="bg-blue-600 hover:bg-blue-700"
+                              onClick={() => setSelectedJob(job)}
+                            >
+                              <Send className="w-4 h-4 mr-2" />
+                              Send Proposal
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Send Proposal</DialogTitle>
+                              <DialogDescription>
+                                Submit your proposal for "{selectedJob?.title}"
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Your Proposal</label>
+                                <Textarea
+                                  placeholder="Describe why you're the perfect fit for this project..."
+                                  value={proposalText}
+                                  onChange={(e) => setProposalText(e.target.value)}
+                                  rows={6}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Your Rate</label>
+                                <Input
+                                  placeholder="e.g., ₹65,000 or ₹1,200/hour"
+                                  value={proposalRate}
+                                  onChange={(e) => setProposalRate(e.target.value)}
+                                />
+                              </div>
+                              <Button onClick={handleSendProposal} className="w-full bg-blue-600 hover:bg-blue-700">
+                                Submit Proposal
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   </CardContent>
@@ -445,14 +570,97 @@ const FreelancerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="contracts" className="space-y-6">
-            <div className="text-center py-12">
-              <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Active Contracts</h3>
-              <p className="text-gray-600 mb-6">You don't have any active contracts at the moment.</p>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Search className="w-4 h-4 mr-2" />
-                Find Your First Job
-              </Button>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">My Contracts</h2>
+              <div className="text-sm text-gray-600">
+                {mockContracts.length} contracts
+              </div>
+            </div>
+
+            <div className="grid gap-6">
+              {mockContracts.map((contract) => (
+                <Card key={contract.id} className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{contract.title}</h3>
+                          <p className="text-gray-600">{contract.client}</p>
+                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              <span>Started {new Date(contract.startDate).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-1" />
+                              <span>Deadline {new Date(contract.deadline).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <DollarSign className="w-4 h-4 mr-1" />
+                              <span>{contract.budget}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Badge 
+                          className={
+                            contract.status === "Active" 
+                              ? "bg-green-100 text-green-800"
+                              : contract.status === "Completed"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }
+                        >
+                          {contract.status}
+                        </Badge>
+                      </div>
+                      
+                      {contract.status === "Active" && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Progress</span>
+                            <span>{contract.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                              style={{ width: `${contract.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-3 pt-2">
+                        <Button variant="outline" size="sm" className="border-gray-200">
+                          <Eye className="w-4 h-4 mr-1" />
+                          View Details
+                        </Button>
+                        <Button variant="outline" size="sm" className="border-gray-200">
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          Message Client
+                        </Button>
+                        {contract.status === "Completed" && (
+                          <Button variant="outline" size="sm" className="border-gray-200">
+                            <FileText className="w-4 h-4 mr-1" />
+                            Invoice
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {mockContracts.length === 0 && (
+                <div className="text-center py-12">
+                  <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Contracts Yet</h3>
+                  <p className="text-gray-600 mb-6">Start applying to jobs to get your first contract.</p>
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setActiveTab("jobs")}>
+                    <Search className="w-4 h-4 mr-2" />
+                    Find Jobs
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
