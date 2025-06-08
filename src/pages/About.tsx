@@ -1,5 +1,6 @@
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { 
   Briefcase,
   Settings,
@@ -9,7 +10,7 @@ import {
   Clock,
   CheckCircle
 } from "lucide-react";
-import { logout } from "@/lib/config/api";
+import { logout, isLoggedIn } from "@/lib/config/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import MobileNav from "@/components/MobileNav";
@@ -17,9 +18,25 @@ import MobileNav from "@/components/MobileNav";
 const About = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<'FREELANCER' | 'CLIENT' | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
+  useEffect(() => {
+    const loggedIn = isLoggedIn();
+    setUserLoggedIn(loggedIn);
+    
+    if (loggedIn) {
+      const role = localStorage.getItem('role') as 'FREELANCER' | 'CLIENT' | null;
+      setUserRole(role);
+      // You can fetch user profile here if needed
+    }
+  }, []);
   const handleLogout = () => {
     logout();
+    setUserLoggedIn(false);
+    setUserProfile(null);
+    setUserRole(null);
     navigate('/');
   };
 
@@ -38,21 +55,31 @@ const About = () => {
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-gray-600 hover:text-blue-600">Find Work</Link>
               <Link to="/about" className="text-blue-600 font-medium">About</Link>
-              <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleLogout}
-                className="border-red-300 text-red-600 hover:bg-red-50"
-              >
-                Logout
-              </Button>
-              {/* <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button> */}
+              {userLoggedIn && <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>}
+              {userLoggedIn ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Link to="/login" className="text-gray-600 hover:text-blue-600">Log In</Link>
+                  <Link to="/signup">
+                    <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
+                  </Link>
+                </>
+              )}
             </nav>
-            <MobileNav currentPath={location.pathname} />
+            <MobileNav 
+              currentPath={location.pathname}
+              userLoggedIn={userLoggedIn}
+              userRole={userRole}
+              userProfile={userProfile}
+            />
           </div>
         </div>
       </header>

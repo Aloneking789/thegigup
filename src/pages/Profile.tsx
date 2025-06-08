@@ -26,6 +26,7 @@ import { clientService, freelancerService } from "@/lib/api/client";
 import { FreelancerProfileResponse, ClientProfileResponse } from "@/lib/api/types";
 import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
 import { logout } from "@/lib/config/api";
+import MobileNav from "@/components/MobileNav";
 
 const Profile = () => {
   const { toast } = useToast();
@@ -149,8 +150,7 @@ const Profile = () => {
                   <Link to="/post-job" className="text-gray-600 hover:text-blue-600">Post Job</Link>
                 </>              )}
               <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
-              <Link to="/profile" className="text-blue-600 font-medium">Profile</Link>
-              <Button 
+              <Link to="/profile" className="text-blue-600 font-medium">Profile</Link>              <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleLogout}
@@ -159,6 +159,13 @@ const Profile = () => {
                 Logout
               </Button>
             </nav>
+            
+            {/* Mobile Navigation */}
+            <MobileNav 
+              userLoggedIn={true}
+              userRole={userRole}
+              userProfile={profileData}
+            />
           </div>
         </div>
       </header>

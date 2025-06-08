@@ -4,13 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { logout } from "@/lib/config/api";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { logout, isLoggedIn } from "@/lib/config/api";
 
 interface MobileNavProps {
   currentPath?: string;
+  userLoggedIn?: boolean;
+  userRole?: 'FREELANCER' | 'CLIENT' | null;
+  userProfile?: any;
 }
 
-const MobileNav = ({ currentPath }: MobileNavProps) => {
+const MobileNav = ({ currentPath, userLoggedIn, userRole, userProfile }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -20,13 +24,43 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
     navigate('/');
   };
 
-  const navItems = [
-    { path: "/find-talent", label: "Find Talent" },
-    { path: "/find-work", label: "Find Work" },
-    { path: "/about", label: "About" },
-    { path: "/profile", label: "Profile" },
-    { path: "/post-job", label: "Post Job" },
-  ];
+  const getNavItems = () => {
+    if (!userLoggedIn) {
+      // Guest navigation
+      return [
+        { path: "/find-talent", label: "Find Talent" },
+        { path: "/find-work", label: "Find Work" },
+        { path: "/about", label: "About" },
+        { path: "/login", label: "Log In" },
+        { path: "/signup", label: "Sign Up" },
+      ];
+    }
+
+    // Authenticated user navigation
+    const baseItems = [
+      { path: "/about", label: "About" },
+      { path: "/profile", label: "Profile" },
+    ];
+
+    if (userRole === 'CLIENT') {
+      return [
+        { path: "/find-talent", label: "Find Talent" },
+        { path: "/client-dashboard", label: "Dashboard" },
+        { path: "/post-job", label: "Post Job" },
+        ...baseItems,
+      ];
+    } else if (userRole === 'FREELANCER') {
+      return [
+        { path: "/find-work", label: "Find Work" },
+        { path: "/freelancer-dashboard", label: "Dashboard" },
+        ...baseItems,
+      ];
+    }
+
+    return baseItems;
+  };
+
+  const navItems = getNavItems();
 
   return (
     <div className="md:hidden">
@@ -36,8 +70,7 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle menu</span>
           </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+        </SheetTrigger>        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-2 pb-4 border-b">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -45,6 +78,23 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
               </div>
               <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
             </div>
+
+            {/* User Profile Section (if logged in) */}
+            {userLoggedIn && userProfile && (
+              <div className="flex items-center space-x-3 pb-4 border-b">
+                <Avatar className="w-10 h-10 border-2 border-blue-600">
+                  <AvatarImage src={userProfile?.profileImage || undefined} />
+                  <AvatarFallback className="bg-blue-600 text-white text-sm">
+                    {userProfile?.name?.split(" ").map((n: string) => n[0]).join("") || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium text-gray-900">{userProfile?.name || 'User'}</div>
+                  <div className="text-sm text-gray-600">{userRole}</div>
+                </div>
+              </div>
+            )}
+            
             <nav className="flex flex-col space-y-2">              {navItems.map((item) => (
                 <Link
                   key={item.path}
@@ -59,13 +109,17 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
                   {item.label}
                 </Link>
               ))}
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="mt-4 border-red-300 text-red-600 hover:bg-red-50 w-full"
-              >
-                Logout
-              </Button>
+              
+              {/* Logout button for authenticated users */}
+              {userLoggedIn && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="mt-4 border-red-300 text-red-600 hover:bg-red-50 w-full"
+                >
+                  Logout
+                </Button>
+              )}
             </nav>
           </div>
         </SheetContent>

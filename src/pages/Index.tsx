@@ -12,6 +12,7 @@ import { FeaturedProject, FeaturedFreelancer } from "@/lib/api/types";
 import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
 import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
 import JobDetailModal from "@/components/JobDetailModal";
+import MobileNav from "@/components/MobileNav";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -194,10 +195,15 @@ const Index = () => {
                   </Link>
                   <Link to="/signup">
                     <Button className="bg-blue-600 hover:bg-blue-700">Sign Up</Button>
-                  </Link>
-                </>
+                  </Link>                </>
               )}
             </nav>
+              {/* Mobile Navigation */}
+            <MobileNav 
+              userLoggedIn={userLoggedIn}
+              userRole={userRole}
+              userProfile={userProfile}
+            />
           </div>
         </div>
       </header>

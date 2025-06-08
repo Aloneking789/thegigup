@@ -37,6 +37,7 @@ import {
 } from "@/lib/api/types";
 import { logout, isLoggedIn } from "@/lib/config/api";
 import JobDetailModal from "@/components/JobDetailModal";
+import MobileNav from "@/components/MobileNav";
 
 const mockJobs = [
   {
@@ -416,9 +417,18 @@ const FreelancerDashboard = () => {
                 <AvatarFallback>RP</AvatarFallback>
               </Avatar>
             </div>
-          </div>
-        </div>
+          </div>        </div>
       </header>
+
+      <MobileNav 
+        userLoggedIn={true}
+        userRole="FREELANCER"
+        userProfile={profile ? {
+          name: profile.profile?.name || 'User',
+          email: profile.profile?.email || '',
+          profileImage: profile.profile?.profileImage
+        } : undefined}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

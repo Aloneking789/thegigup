@@ -35,6 +35,7 @@ import {
   ClientDashboardResponse 
 } from "@/lib/api/types";
 import RatingModal from "@/components/RatingModal";
+import MobileNav from "@/components/MobileNav";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -359,9 +360,18 @@ const ClientDashboard = () => {
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
             </div>
-          </div>
-        </div>
+          </div>        </div>
       </header>
+
+      <MobileNav 
+        userLoggedIn={true}
+        userRole="CLIENT"
+        userProfile={{
+          name: 'Client User',
+          email: '',
+          profileImage: undefined
+        }}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

@@ -33,7 +33,7 @@ import FreelancerContactModal from "@/components/FreelancerContactModal";
 import { publicService } from "@/lib/api/client";
 import { PublicFreelancer } from "@/lib/api/types";
 import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
-import { logout } from "@/lib/config/api";
+import { logout, isLoggedIn, RoleStorage } from "@/lib/config/api";
 import { useNavigate } from "react-router-dom";
 
 const FindTalent = () => {
@@ -45,13 +45,21 @@ const FindTalent = () => {
   // API state
   const [freelancers, setFreelancers] = useState<PublicFreelancer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
+  const [error, setError] = useState<string | null>(null);  const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0,
     pages: 0
   });
+
+  // User state management
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<'CLIENT' | 'FREELANCER' | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    email: string;
+    profileImage?: string;
+  } | null>(null);
   
   // Search and filters state
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,8 +84,27 @@ const FindTalent = () => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
     }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    return () => clearTimeout(timer);  }, [searchQuery]);
+
+  // Initialize user state
+  useEffect(() => {
+    const loggedIn = isLoggedIn();
+    setUserLoggedIn(loggedIn);
+    
+    if (loggedIn) {
+      const role = RoleStorage.getRole();
+      setUserRole(role as 'CLIENT' | 'FREELANCER');
+      
+      // Get user profile data from localStorage or set default
+      const storedUserName = localStorage.getItem('userName') || 'User';
+      const storedUserEmail = localStorage.getItem('userEmail') || '';
+      setUserProfile({
+        name: storedUserName,
+        email: storedUserEmail,
+        profileImage: undefined
+      });
+    }
+  }, []);
 
   // Fetch freelancers
   const fetchFreelancers = async () => {
@@ -210,9 +237,12 @@ const FindTalent = () => {
                 Logout
               </Button>
             </div>
-          </div>
-        </div>
-        <MobileNav />
+          </div>        </div>
+        <MobileNav 
+          userLoggedIn={userLoggedIn}
+          userRole={userRole}
+          userProfile={userProfile}
+        />
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -25,7 +25,7 @@ import JobDetailModal from "@/components/JobDetailModal";
 import { publicService } from "@/lib/api/client";
 import { PublicJob } from "@/lib/api/types";
 import { useToast } from "@/hooks/use-toast";
-import { logout } from "@/lib/config/api";
+import { logout, isLoggedIn, RoleStorage } from "@/lib/config/api";
 
 const FindWork = () => {
   const location = useLocation();

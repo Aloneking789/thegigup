@@ -53,36 +53,80 @@ const PublicProfile = () => {
 
         // Check if user is logged in
         setIsLoggedInUser(isLoggedIn());
-        
-        // Make request to public profile API
-        const response = await fetch(getApiUrl(`/public/users/${userId}/profile`), {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+          // Try first API endpoint - general user profile
+        let response;
+        let data;
+        let apiUsed = 'users';
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch profile: ${response.statusText}`);
-        }
+        try {
+          response = await fetch(getApiUrl(`/public/users/${userId}/profile`), {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-        const data = await response.json();
-        console.log('Profile data:', data);
-          if (data.success) {
-          setProfileData(data.data);
-          
-          // Determine if this is a freelancer or client based on the userType in response
-          if (data.data.userType === 'FREELANCER') {
-            setUserRole('FREELANCER');
-          } else if (data.data.userType === 'CLIENT') {
-            setUserRole('CLIENT');
+          if (response.ok) {
+            data = await response.json();
+            console.log('Profile data from users API:', data);
+            
+            if (data.success) {
+              setProfileData(data.data);
+              
+              // Determine if this is a freelancer or client based on the userType in response
+              if (data.data.userType === 'FREELANCER') {
+                setUserRole('FREELANCER');
+              } else if (data.data.userType === 'CLIENT') {
+                setUserRole('CLIENT');
+              } else {
+                throw new Error('Unable to determine user type');
+              }
+              return; // Success, exit early
+            } else {
+              throw new Error(data.message || 'Failed to fetch profile data from users API');
+            }
           } else {
-            throw new Error('Unable to determine user type');
+            throw new Error(`Users API failed: ${response.statusText}`);
           }
-        } else {
-          throw new Error(data.message || 'Failed to fetch profile data');
-        }
-        
+        } catch (error) {
+          console.log('Users API failed, trying freelancers API:', error);
+          
+          // Fallback to freelancers API
+          try {
+            response = await fetch(getApiUrl(`/public/freelancers/${userId}/profile`), {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(`Freelancers API failed: ${response.statusText}`);
+            }
+
+            data = await response.json();
+            apiUsed = 'freelancers';
+            console.log('Profile data from freelancers API:', data);
+            
+            if (data.success) {
+              // Transform freelancers API response to match users API format
+              const transformedData = {
+                userType: 'FREELANCER',
+                freelancer: data.data.freelancer,
+                ratingsReceived: data.data.ratingsReceived,
+                completedProjects: data.data.completedProjects
+              };
+              
+              setProfileData(transformedData);
+              setUserRole('FREELANCER');
+            } else {
+              throw new Error(data.message || 'Failed to fetch profile data from freelancers API');
+            }
+          } catch (freelancerError) {
+            console.error('Both APIs failed:', freelancerError);
+            throw new Error('Unable to load profile from any available endpoint');
+          }
+        }        
       } catch (err) {
         console.error('Profile fetch error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load profile');
