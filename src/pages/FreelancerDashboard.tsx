@@ -365,9 +365,14 @@ const FreelancerDashboard = () => {
       });
     }
   };
-
   const handleCompleteProfile = () => {
-    navigate('/freelancer-profile-setup');
+    // If profile is sufficiently complete (90%+), navigate to edit profile
+    // Otherwise, navigate to profile setup
+    if (profileCompletion >= 90) {
+      navigate('/edit-profile');
+    } else {
+      navigate('/freelancer-profile-setup');
+    }
   };
 
   const handleLogout = () => {
@@ -399,10 +404,7 @@ const FreelancerDashboard = () => {
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Messages
               </Button>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+ 
               {isLoggedIn() && (
                 <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />

@@ -82,7 +82,7 @@ const Signup = () => {
       if (response.ok) {
         // Store token and role in localStorage
         const role = formData.role.toUpperCase() as 'CLIENT' | 'FREELANCER';
-        setTokenByRole(role, data.token);
+        setTokenByRole(role, data.data.token);
 
         toast({
           title: "Account created successfully!",

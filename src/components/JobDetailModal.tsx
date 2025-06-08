@@ -6,12 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Clock, DollarSign, Send, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { PublicJobItem } from "@/lib/api/types";
+import { PublicJobItem, FeaturedProject } from "@/lib/api/types";
 import { freelancerService } from "@/lib/api/client";
 import { RoleStorage } from "@/lib/config/api";
 
 interface JobDetailModalProps {
-  job: PublicJobItem | null;
+  job: PublicJobItem | FeaturedProject | null;
   isOpen: boolean;
   onClose: () => void;
   showProposalForm?: boolean;

@@ -115,30 +115,43 @@ const FreelancerProfileSetup = () => {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      
+        // Validate required fields
+      if (!profileData.name || !profileData.bio || !profileData.location || !profileData.experience || !profileData.hourlyRate) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Prepare data for API - exact format as specified
       const apiData = {
-        name: profileData.name,
-        bio: profileData.bio,
-        location: profileData.location,
-        age: parseInt(profileData.age) || null,
-        skills: profileData.skills.join(','),
-        experience: profileData.experience,
+        name: profileData.name.trim(),
+        bio: profileData.bio.trim(),
+        location: profileData.location.trim(),
+        age: profileData.age ? parseInt(profileData.age) : null,
+        skills: profileData.skills.length > 0 ? profileData.skills.join(',') : '',
+        experience: profileData.experience.trim(),
         hourlyRate: parseFloat(profileData.hourlyRate) || 0,
         availability: profileData.availability,
-        githubUrl: profileData.githubUrl,
-        linkedinUrl: profileData.linkedinUrl,
-        portfolioUrl: profileData.portfolioUrl
+        githubUrl: profileData.githubUrl.trim(),
+        linkedinUrl: profileData.linkedinUrl.trim(),
+        portfolioUrl: profileData.portfolioUrl.trim()
       };
 
+      console.log('Sending API data:', apiData);      console.log('Sending API data:', apiData);
+
       if (hasExistingProfile) {
-        await freelancerService.updateProfile(apiData);
+        const result = await freelancerService.updateProfile(apiData);
+        console.log('Update result:', result);
         toast({
           title: "Profile Updated Successfully!",
           description: "Your changes have been saved.",
         });
       } else {
-        await freelancerService.createProfile(apiData);
+        const result = await freelancerService.createProfile(apiData);
+        console.log('Create result:', result);
         toast({
           title: "Profile Created Successfully!",
           description: "Welcome to FreelanceHub. Your profile is now live.",
@@ -146,13 +159,24 @@ const FreelancerProfileSetup = () => {
       }
       
       navigate("/freelancer-dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save profile. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Better error handling
+      let errorMessage = "Failed to save profile. Please try again.";
+      navigate("/freelancer-dashboard");
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // toast({
+      //   title: "Error",
+      //   description: errorMessage,
+      //   variant: "destructive",
+      // });
     } finally {
       setIsSubmitting(false);
     }

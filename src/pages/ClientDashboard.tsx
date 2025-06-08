@@ -343,14 +343,11 @@ const ClientDashboard = () => {
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
             </div>            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleViewMessages}>
+              {/* <Button variant="outline" onClick={handleViewMessages}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Messages
-              </Button>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+              </Button> */}
+ 
               {isLoggedIn() && (
                 <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
@@ -377,7 +374,7 @@ const ClientDashboard = () => {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="jobs">My Jobs</TabsTrigger>
             <TabsTrigger value="applicants">Applicants</TabsTrigger>
-            <TabsTrigger value="contracts">Contracts</TabsTrigger>
+            {/* <TabsTrigger value="contracts">Contracts</TabsTrigger> */}
           </TabsList>          <TabsContent value="overview" className="space-y-6">            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card className="bg-white border-gray-200">
@@ -448,14 +445,14 @@ const ClientDashboard = () => {
                     <Search className="w-6 h-6" />
                     <span>Browse Freelancers</span>
                   </Button>
-                  <Button 
+                  {/* <Button 
                     variant="outline" 
                     onClick={handleViewMessages}
                     className="h-auto p-6 flex-col space-y-2 border-gray-200"
                   >
                     <MessageSquare className="w-6 h-6" />
                     <span>View Messages</span>
-                  </Button>
+                  </Button> */}
                 </div>
               </CardContent>
             </Card>            {/* Recent Activity */}

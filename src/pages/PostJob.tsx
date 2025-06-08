@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { clientService } from "@/lib/api/client";
-import { isLoggedIn, RoleStorage } from "@/lib/config/api";
+import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
 import MobileNav from "@/components/MobileNav";
 
 const PostJob = () => {
@@ -156,11 +156,16 @@ const PostJob = () => {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to post job. Please try again.",
         variant: "destructive",
-      });
-    } finally {
+      });    } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -172,14 +177,17 @@ const PostJob = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
+            </div>            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/client-dashboard" className="text-gray-600 hover:text-blue-600">Dashboard</Link>
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Logout
               </Button>
             </nav>
             <MobileNav currentPath={location.pathname} />

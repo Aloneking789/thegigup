@@ -1,9 +1,10 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { logout } from "@/lib/config/api";
 
 interface MobileNavProps {
   currentPath?: string;
@@ -11,6 +12,13 @@ interface MobileNavProps {
 
 const MobileNav = ({ currentPath }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    navigate('/');
+  };
 
   const navItems = [
     { path: "/find-talent", label: "Find Talent" },
@@ -37,8 +45,7 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
               </div>
               <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
             </div>
-            <nav className="flex flex-col space-y-2">
-              {navItems.map((item) => (
+            <nav className="flex flex-col space-y-2">              {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -52,6 +59,13 @@ const MobileNav = ({ currentPath }: MobileNavProps) => {
                   {item.label}
                 </Link>
               ))}
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+                className="mt-4 border-red-300 text-red-600 hover:bg-red-50 w-full"
+              >
+                Logout
+              </Button>
             </nav>
           </div>
         </SheetContent>

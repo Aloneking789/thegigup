@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { 
   Briefcase,
   Settings,
@@ -14,7 +14,8 @@ import {
   Calendar,
   Award,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,46 +23,64 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { clientService, freelancerService } from "@/lib/api/client";
+import { logout, getApiUrl, isLoggedIn } from "@/lib/config/api";
 import { FreelancerProfileResponse, ClientProfileResponse } from "@/lib/api/types";
-import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
-import { logout } from "@/lib/config/api";
 
-const Profile = () => {
+const PublicProfile = () => {
+  const { userId, nameSlug } = useParams<{ userId: string; nameSlug: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<'FREELANCER' | 'CLIENT' | null>(null);
-  const [profileData, setProfileData] = useState<FreelancerProfileResponse | ClientProfileResponse | null>(null);
+  const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const loadPublicProfile = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        // Get role from localStorage
-        const role = localStorage.getItem('role') as 'FREELANCER' | 'CLIENT' | null;
-        
-        if (!role) {
-          throw new Error('No user role found. Please log in again.');
+        if (!userId) {
+          throw new Error('User ID not provided in URL');
         }
+
+        // Check if user is logged in
+        setIsLoggedInUser(isLoggedIn());
         
-        setUserRole(role);
-        
-        // Fetch profile data based on role
-        let response;
-        if (role === 'FREELANCER') {
-          response = await freelancerService.getProfile();
-        } else if (role === 'CLIENT') {
-          response = await clientService.getProfile();
+        // Make request to public profile API
+        const response = await fetch(getApiUrl(`/public/users/${userId}/profile`), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch profile: ${response.statusText}`);
         }
-        
-        if (response?.success) {
-          setProfileData(response.data);
+
+        const data = await response.json();
+        console.log('Profile data:', data);
+          if (data.success) {
+          setProfileData(data.data);
+          
+          // Determine if this is a freelancer or client based on the userType in response
+          if (data.data.userType === 'FREELANCER') {
+            setUserRole('FREELANCER');
+          } else if (data.data.userType === 'CLIENT') {
+            setUserRole('CLIENT');
+          } else {
+            throw new Error('Unable to determine user type');
+          }
         } else {
-          throw new Error('Failed to fetch profile data');
+          throw new Error(data.message || 'Failed to fetch profile data');
         }
         
       } catch (err) {
@@ -77,8 +96,8 @@ const Profile = () => {
       }
     };
 
-    loadProfile();
-  }, [toast]);
+    loadPublicProfile();
+  }, [userId, toast]);
 
   // Format time since joined
   const formatMemberSince = (dateString: string) => {
@@ -114,51 +133,76 @@ const Profile = () => {
           </Button>
         </div>
       </div>
-    );  }
-  // Check if it's freelancer profile
+    );
+  }  // Check if it's freelancer profile
   const isFreelancer = userRole === 'FREELANCER';
-  const freelancerData = isFreelancer ? (profileData as any).freelancer : null;
-  const clientData = !isFreelancer ? (profileData as any).client : null;
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const freelancerData = isFreelancer ? profileData.freelancer : null;
+  const clientData = !isFreelancer ? profileData.client : null;
+  
+  // Get common profile data
+  const displayName = isFreelancer 
+    ? freelancerData?.profile?.name || 'Unknown User'
+    : clientData?.profile?.name || 'Unknown User';
+  const displayEmail = profileData.email || 'Email not available';
+  const displayLocation = isFreelancer 
+    ? freelancerData?.profile?.location || 'Location not specified'
+    : clientData?.profile?.location || 'Location not specified';
+  const profileImage = isFreelancer 
+    ? freelancerData?.profile?.profileImage
+    : clientData?.profile?.profileImage;
+  const memberSince = isFreelancer 
+    ? freelancerData?.profile?.memberSince
+    : clientData?.profile?.memberSince;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-white" />
-              </div>
-              <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>            <nav className="hidden md:flex items-center space-x-6">
-              {isFreelancer ? (
-                <>
-                  <Link to="/find-work" className="text-gray-600 hover:text-blue-600">Find Work</Link>
-                  <Link to="/freelancer-dashboard" className="text-gray-600 hover:text-blue-600">Dashboard</Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
-                  <Link to="/client-dashboard" className="text-gray-600 hover:text-blue-600">Dashboard</Link>
-                  <Link to="/post-job" className="text-gray-600 hover:text-blue-600">Post Job</Link>
-                </>              )}
-              <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
-              <Link to="/profile" className="text-blue-600 font-medium">Profile</Link>
-              <Button 
-                variant="outline" 
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
                 size="sm"
-                onClick={handleLogout}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => navigate(-1)}
+                className="flex items-center space-x-2"
               >
-                Logout
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
               </Button>
-            </nav>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-white" />
+                </div>
+                <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
+              </div>
+            </div>
+
+            {isLoggedInUser && (
+              <nav className="hidden md:flex items-center space-x-6">
+                <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
+                <Link to="/profile" className="text-gray-600 hover:text-blue-600">My Profile</Link>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </Button>
+              </nav>
+            )}
+            
+            {!isLoggedInUser && (
+              <nav className="hidden md:flex items-center space-x-6">
+                <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
+                <Link to="/login" className="text-gray-600 hover:text-blue-600">Login</Link>
+                <Link to="/signup">
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    Sign Up
+                  </Button>
+                </Link>
+              </nav>
+            )}
           </div>
         </div>
       </header>
@@ -169,47 +213,45 @@ const Profile = () => {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">              <div className="relative">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={profileData.profileImage || undefined} />
+                  <AvatarImage src={profileImage || undefined} />
                   <AvatarFallback className="text-2xl">
-                    {profileData.name?.split(" ").map(n => n[0]).join("") || 'U'}
+                    {displayName.split(" ").map(n => n[0]).join("") || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full w-10 h-10 p-0">
-                  <Camera className="w-4 h-4" />
-                </Button>
               </div>
               
-              <div className="flex-1 space-y-4">
-                <div>                  <h1 className="text-3xl font-bold text-gray-900">{profileData.name || 'User'}</h1>
+              <div className="flex-1 space-y-4">                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{displayName}</h1>
                   <p className="text-xl text-blue-600 font-medium">
                     {isFreelancer 
-                      ? (freelancerData?.experience ? `${freelancerData.experience} years experience` : 'Experience not specified')
-                      : (clientData?.companyName || 'Client')
+                      ? (freelancerData?.professionalInfo?.experience ? `${freelancerData.professionalInfo.experience} years experience` : 'Experience not specified')
+                      : (clientData?.companyInfo?.companyName || 'Client')
                     }
-                  </p>                  {isFreelancer && freelancerData && (
+                  </p>
+                  {isFreelancer && freelancerData && (
                     <div className="flex items-center mt-2">
                       <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                      <span className="ml-1 font-medium">{freelancerData.ratings || 0}</span>
-                      <span className="text-gray-500 ml-1">({freelancerData.projectsCompleted || 0} projects)</span>
-                      {freelancerData.isVerified && (
+                      <span className="ml-1 font-medium">{freelancerData.statistics?.averageRating || 0}</span>
+                      <span className="text-gray-500 ml-1">({freelancerData.statistics?.projectsCompleted || 0} projects)</span>
+                      {freelancerData.professionalInfo?.isVerified && (
                         <Badge className="ml-2 bg-green-100 text-green-800 border-green-200">
                           Verified
                         </Badge>
                       )}
                       <Badge 
-                        className={`ml-2 ${freelancerData.availability 
+                        className={`ml-2 ${freelancerData.professionalInfo?.availability 
                           ? 'bg-green-100 text-green-800 border-green-200' 
                           : 'bg-gray-100 text-gray-800 border-gray-200'
                         }`}
                       >
-                        {freelancerData.availability ? 'Available' : 'Busy'}
+                        {freelancerData.professionalInfo?.availability ? 'Available' : 'Busy'}
                       </Badge>
                     </div>
                   )}
                   {!isFreelancer && clientData && (
                     <div className="flex items-center mt-2">
-                      <span className="text-gray-500">Industry: {clientData.industry || 'Not specified'}</span>
-                      {clientData.isVerified && (
+                      <span className="text-gray-500">Industry: {clientData.companyInfo?.industry || 'Not specified'}</span>
+                      {clientData.companyInfo?.isVerified && (
                         <Badge className="ml-2 bg-green-100 text-green-800 border-green-200">
                           Verified
                         </Badge>
@@ -217,40 +259,35 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                   <div className="flex items-center">
                     <Mail className="w-4 h-4 mr-2" />
-                    {profileData.email}
-                  </div>                  <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
-                    {isFreelancer && freelancerData?.age ? `Age: ${freelancerData.age}` : 'Age not specified'}
+                    {displayEmail}
+                  </div>
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2" />
+                    {isFreelancer ? 'Freelancer' : 'Client'}
                   </div>
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-2" />
-                    {profileData.location || 'Location not specified'}
+                    {displayLocation}
                   </div>
-                </div>                  <div className="flex justify-between items-center">
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => navigate('/edit-profile')}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                  
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      const publicUrl = generatePublicProfileUrl(profileData.name, profileData.id);
-                      window.open(publicUrl, '_blank');
-                    }}
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    View Public Profile
-                  </Button>
                 </div>
+
+                {isLoggedInUser && (
+                  <div className="flex gap-4">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Contact {isFreelancer ? 'Freelancer' : 'Client'}
+                    </Button>
+                    {isFreelancer && (
+                      <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Hire Now
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -271,16 +308,15 @@ const Profile = () => {
                     {isFreelancer ? 'Completed Projects' : 'Total Projects'}
                   </CardTitle>
                   <Briefcase className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent>
+                </CardHeader>                <CardContent>
                   <div className="text-2xl font-bold">
                     {isFreelancer 
-                      ? (freelancerData?.projectsCompleted || 0) 
-                      : (clientData?.projectsPosted || 0)
+                      ? (freelancerData?.statistics?.projectsCompleted || 0) 
+                      : (clientData?.statistics?.projectsCompleted || 0)
                     }
                   </div>
                   <p className="text-xs text-gray-600">
-                    {isFreelancer ? 'Successfully delivered' : 'Projects posted'}
+                    {isFreelancer ? 'Successfully delivered' : 'Projects completed'}
                   </p>
                 </CardContent>
               </Card>              <Card className="bg-white border-gray-200">
@@ -289,12 +325,11 @@ const Profile = () => {
                     {isFreelancer ? 'Hourly Rate' : 'Rating'}
                   </CardTitle>
                   <Award className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
+                </CardHeader>                <CardContent>
                   <div className="text-2xl font-bold">
                     {isFreelancer 
-                      ? (freelancerData?.hourlyRate ? `₹${freelancerData.hourlyRate}/hr` : 'Not set')
-                      : (clientData?.ratings ? `${clientData.ratings}/5` : 'No rating')
+                      ? (freelancerData?.professionalInfo?.hourlyRate ? `₹${freelancerData.professionalInfo.hourlyRate}/hr` : 'Not set')
+                      : (clientData?.statistics?.averageRating ? `${clientData.statistics.averageRating}/5` : 'No rating')
                     }
                   </div>
                   <p className="text-xs text-gray-600">
@@ -307,10 +342,9 @@ const Profile = () => {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Member Since</CardTitle>
                   <Calendar className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
+                </CardHeader>                <CardContent>
                   <div className="text-2xl font-bold">
-                    {formatMemberSince(profileData.createdAt)}
+                    {formatMemberSince(memberSince || '')}
                   </div>
                   <p className="text-xs text-gray-600">Join date</p>
                 </CardContent>
@@ -320,10 +354,12 @@ const Profile = () => {
               <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle>About</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </CardHeader>                <CardContent>
                   <p className="text-gray-600">
-                    {profileData.bio || 'No bio provided yet.'}
+                    {isFreelancer 
+                      ? (freelancerData?.profile?.bio || 'No bio provided yet.')
+                      : (clientData?.profile?.bio || 'No bio provided yet.')
+                    }
                   </p>
                 </CardContent>
               </Card>
@@ -332,11 +368,14 @@ const Profile = () => {
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle>Skills</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  </CardHeader>                  <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {freelancerData?.skills && freelancerData.skills.length > 0 ? (
-                        freelancerData.skills.map((skill) => (
+                      {freelancerData?.professionalInfo?.skills ? (
+                        // Handle skills as either array or comma-separated string
+                        (Array.isArray(freelancerData.professionalInfo.skills) 
+                          ? freelancerData.professionalInfo.skills 
+                          : freelancerData.professionalInfo.skills.split(',').map(s => s.trim())
+                        ).map((skill: string) => (
                           <Badge key={skill} variant="secondary">
                             {skill}
                           </Badge>
@@ -352,23 +391,22 @@ const Profile = () => {
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle>Company Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  </CardHeader>                  <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center text-sm">
                         <span className="w-20 text-gray-500 font-medium">Company:</span>
-                        <span>{clientData?.companyName || 'Not specified'}</span>
+                        <span>{clientData?.companyInfo?.companyName || 'Not specified'}</span>
                       </div>
                       <div className="flex items-center text-sm">
                         <span className="w-20 text-gray-500 font-medium">Industry:</span>
-                        <span>{clientData?.industry || 'Not specified'}</span>
+                        <span>{clientData?.companyInfo?.industry || 'Not specified'}</span>
                       </div>
                       <div className="flex items-center text-sm">
                         <span className="w-20 text-gray-500 font-medium">Website:</span>
-                        {clientData?.website ? (
-                          <a href={clientData.website} target="_blank" rel="noopener noreferrer" 
+                        {clientData?.companyInfo?.website ? (
+                          <a href={clientData.companyInfo.website} target="_blank" rel="noopener noreferrer" 
                              className="text-blue-600 hover:underline">
-                            {clientData.website}
+                            {clientData.companyInfo.website}
                           </a>
                         ) : (
                           <span>Not specified</span>
@@ -383,37 +421,36 @@ const Profile = () => {
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle>Portfolio Links</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  </CardHeader>                  <CardContent>
                     <div className="space-y-2">
-                      {freelancerData?.githubUrl && (
+                      {freelancerData?.portfolioLinks?.github && (
                         <div className="flex items-center text-sm">
                           <span className="w-16 text-gray-500">GitHub:</span>
-                          <a href={freelancerData.githubUrl} target="_blank" rel="noopener noreferrer" 
+                          <a href={freelancerData.portfolioLinks.github} target="_blank" rel="noopener noreferrer" 
                              className="text-blue-600 hover:underline">
-                            {freelancerData.githubUrl}
+                            {freelancerData.portfolioLinks.github}
                           </a>
                         </div>
                       )}
-                      {freelancerData?.linkedinUrl && (
+                      {freelancerData?.portfolioLinks?.linkedin && (
                         <div className="flex items-center text-sm">
                           <span className="w-16 text-gray-500">LinkedIn:</span>
-                          <a href={freelancerData.linkedinUrl} target="_blank" rel="noopener noreferrer" 
+                          <a href={freelancerData.portfolioLinks.linkedin} target="_blank" rel="noopener noreferrer" 
                              className="text-blue-600 hover:underline">
-                            {freelancerData.linkedinUrl}
+                            {freelancerData.portfolioLinks.linkedin}
                           </a>
                         </div>
                       )}
-                      {freelancerData?.portfolioUrl && (
+                      {freelancerData?.portfolioLinks?.portfolio && (
                         <div className="flex items-center text-sm">
                           <span className="w-16 text-gray-500">Portfolio:</span>
-                          <a href={freelancerData.portfolioUrl} target="_blank" rel="noopener noreferrer" 
+                          <a href={freelancerData.portfolioLinks.portfolio} target="_blank" rel="noopener noreferrer" 
                              className="text-blue-600 hover:underline">
-                            {freelancerData.portfolioUrl}
+                            {freelancerData.portfolioLinks.portfolio}
                           </a>
                         </div>
                       )}
-                      {(!freelancerData?.githubUrl && !freelancerData?.linkedinUrl && !freelancerData?.portfolioUrl) && (
+                      {(!freelancerData?.portfolioLinks?.github && !freelancerData?.portfolioLinks?.linkedin && !freelancerData?.portfolioLinks?.portfolio) && (
                         <p className="text-gray-500 text-sm">No portfolio links added yet</p>
                       )}
                     </div>
@@ -444,19 +481,18 @@ const Profile = () => {
                 <CardHeader>
                   <CardTitle>Posted Projects</CardTitle>
                   <CardDescription>Projects you have posted on the platform</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {clientData?.projects && clientData.projects.length > 0 ? (
+                </CardHeader>                <CardContent>
+                  {profileData?.completedProjects && profileData.completedProjects.length > 0 ? (
                     <div className="space-y-4">
-                      {clientData.projects.map((project: any) => (
+                      {profileData.completedProjects.map((project: any) => (
                         <div key={project.id} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start mb-2">
                             <h4 className="font-semibold text-lg">{project.title}</h4>
                             <Badge 
-                              variant={project.status === 'COMPLETED' ? 'default' : 'secondary'}
-                              className={project.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : ''}
+                              variant="default"
+                              className="bg-green-100 text-green-800"
                             >
-                              {project.status}
+                              COMPLETED
                             </Badge>
                           </div>
                           <p className="text-gray-600 mb-3">{project.description}</p>
@@ -466,15 +502,22 @@ const Profile = () => {
                             ))}
                           </div>
                           <div className="text-sm text-gray-500">
-                            Budget: ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()} • Duration: {project.duration}
+                            Budget: ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()} • Duration: {project.duration}
                           </div>
+                          {project.freelancer && (
+                            <div className="mt-3 pt-3 border-t">
+                              <p className="text-sm text-gray-600">
+                                Completed by: <strong>{project.freelancer.name}</strong> ({project.freelancer.experience} years experience)
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-12">
                       <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Projects Posted Yet</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Projects Completed Yet</h3>
                       <p className="text-gray-600 mb-6">Start posting projects to find talented freelancers</p>
                       <Button className="bg-blue-600 hover:bg-blue-700">
                         Post a Project
@@ -532,4 +575,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default PublicProfile;

@@ -27,6 +27,13 @@ export class ClientService {
     };
   }
 
+  private getAuthHeadersMultipart() {
+    const token = getCurrentToken();
+    return {
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    };
+  }
+
   async getProjects(): Promise<ClientProjectsResponse> {
     const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CLIENT.PROJECTS), {
       method: 'GET',
@@ -53,6 +60,55 @@ export class ClientService {
 
     return response.json();
   }
+
+  // Update client profile
+  async updateProfile(profileData: any): Promise<ApiResponse<ClientProfileResponse>> {
+    const response = await fetch(getApiUrl('/client/profile'), {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(profileData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update profile: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Upload client profile image
+  async uploadProfileImage(file: File): Promise<ApiResponse<{ profileImage: string }>> {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    const response = await fetch(getApiUrl('/client/profile/image'), {
+      method: 'PUT',
+      headers: this.getAuthHeadersMultipart(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload profile image: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Update client profile with image
+  async updateProfileWithImage(formData: FormData): Promise<ApiResponse<ClientProfileResponse>> {
+    const response = await fetch(getApiUrl('/client/profile'), {
+      method: 'PUT',
+      headers: this.getAuthHeadersMultipart(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update profile with image: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   async getDashboardData(): Promise<ClientDashboardResponse> {
     const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CLIENT.DASHBOARD), {
       method: 'GET',
@@ -291,6 +347,38 @@ export class PublicService {
 
     return response.json();
   }
+
+  // Get public freelancer profile by user ID
+  async getFreelancerProfile(userId: string): Promise<ApiResponse<FreelancerProfileResponse>> {
+    const response = await fetch(getApiUrl(`/public/freelancer/${userId}`), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch freelancer profile: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Get public client profile by user ID
+  async getClientProfile(userId: string): Promise<ApiResponse<ClientProfileResponse>> {
+    const response = await fetch(getApiUrl(`/public/client/${userId}`), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch client profile: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
 
 export const publicService = new PublicService();
@@ -304,19 +392,142 @@ export class FreelancerService {
       ...(token && { 'Authorization': `Bearer ${token}` }),
     };
   }
+
+  private getAuthHeadersMultipart() {
+    const token = getCurrentToken();
+    return {
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    };
+  }
+
   // Get Freelancer Profile
-  async getProfile(): Promise<ApiResponse<FreelancerProfileResponse>> {
-    const response = await fetch(getApiUrl('/freelancer/profile'), {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
+  async getProfile(): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl('/freelancer/profile'), {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch freelancer profile: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: data,
+          message: 'Profile fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching freelancer profile:', error);
+      throw error;
+    }
+  }
+
+  // Create freelancer profile
+  async createProfile(profileData: any): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl('/freelancer/profile'), {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to create profile: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: data,
+          message: 'Profile created successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error creating freelancer profile:', error);
+      throw error;
+    }
+  }
+
+  // Update freelancer profile
+  async updateProfile(profileData: any): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl('/freelancer/profile'), {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update profile: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: data,
+          message: 'Profile updated successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error updating freelancer profile:', error);
+      throw error;
+    }
+  }
+
+  // Upload freelancer profile image
+  async uploadProfileImage(file: File): Promise<ApiResponse<{ profileImage: string }>> {
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    const response = await fetch(getApiUrl('/freelancer/profile/image'), {
+      method: 'PUT',
+      headers: this.getAuthHeadersMultipart(),
+      body: formData,
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch freelancer profile: ${response.statusText}`);
+      throw new Error(`Failed to upload profile image: ${response.statusText}`);
     }
 
     return response.json();
   }
+
+  // Update freelancer profile with image
+  async updateProfileWithImage(formData: FormData): Promise<ApiResponse<FreelancerProfileResponse>> {
+    const response = await fetch(getApiUrl('/freelancer/profile'), {
+      method: 'PUT',
+      headers: this.getAuthHeadersMultipart(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update profile with image: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   async applyToProject(projectId: string, applicationData: ProjectApplicationRequest): Promise<ProjectApplicationResponse> {
     const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.APPLY_PROJECT}/${projectId}/apply`), {
       method: 'POST',
@@ -332,47 +543,99 @@ export class FreelancerService {
   }
 
   // Get Assigned Projects
-  async getAssignedProjects(page: number = 1, limit: number = 10): Promise<AssignedProjectsResponse> {
-    const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.ASSIGNED_PROJECTS}?status=ASSIGNED&page=${page}&limit=${limit}`), {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
+  async getAssignedProjects(page: number = 1, limit: number = 10): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.ASSIGNED_PROJECTS}?status=ASSIGNED&page=${page}&limit=${limit}`), {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch assigned projects: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch assigned projects: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: { projects: data.projects || [] },
+          message: 'Assigned projects fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching assigned projects:', error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // Get Freelancer Applications
-  async getApplications(status?: string, page: number = 1, limit: number = 10): Promise<FreelancerApplicationsResponse> {
-    const statusParam = status ? `status=${status}&` : '';
-    const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.APPLICATIONS}?${statusParam}page=${page}&limit=${limit}`), {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
+  async getApplications(status?: string, page: number = 1, limit: number = 10): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const statusParam = status ? `status=${status}&` : '';
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.APPLICATIONS}?${statusParam}page=${page}&limit=${limit}`), {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch applications: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch applications: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: { applications: data.applications || [] },
+          message: 'Applications fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      throw error;
     }
-
-    return response.json();
   }
+
   // Get Public Jobs
-  async getPublicJobs(page: number = 1, limit: number = 12): Promise<PublicJobsResponse> {
-    const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.PUBLIC.JOBS}?page=${page}&limit=${limit}`), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  async getPublicJobs(page: number = 1, limit: number = 12): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.PUBLIC.JOBS}?page=${page}&limit=${limit}`), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch public jobs: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch public jobs: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: { jobs: data.jobs || [] },
+          message: 'Public jobs fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching public jobs:', error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // Request Project Completion

@@ -32,11 +32,15 @@ import MobileNav from "@/components/MobileNav";
 import FreelancerContactModal from "@/components/FreelancerContactModal";
 import { publicService } from "@/lib/api/client";
 import { PublicFreelancer } from "@/lib/api/types";
+import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
+import { logout } from "@/lib/config/api";
+import { useNavigate } from "react-router-dom";
 
 const FindTalent = () => {
   const [selectedFreelancer, setSelectedFreelancer] = useState<PublicFreelancer | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // API state
   const [freelancers, setFreelancers] = useState<PublicFreelancer[]>([]);
@@ -136,7 +140,6 @@ const FindTalent = () => {
     
     return date.toLocaleDateString();
   };
-
   const handleSkillToggle = (skill: string) => {
     setFilters(prev => ({
       ...prev,
@@ -144,6 +147,11 @@ const FindTalent = () => {
         ? prev.skills.filter(s => s !== skill)
         : [...prev.skills, skill]
     }));
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const clearFilters = () => {
@@ -178,23 +186,29 @@ const FindTalent = () => {
                 Dashboard
               </Link>
               <Link to="/find-talent" className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
-                Fin
+                Find Talent
               </Link>
               <Link to="/post-job" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Post Job
               </Link>
-            </nav>
-
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="icon" className="relative">
+            </nav>            <div className="flex items-center space-x-3">
+              {/* <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />
                 <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-xs text-white">3</span>
                 </div>
-              </Button>
+              </Button> */}
               <Avatar className="h-8 w-8 ring-2 ring-blue-100">
                 <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">CL</AvatarFallback>
               </Avatar>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -550,8 +564,7 @@ const FindTalent = () => {
                                 </Badge>
                               )}
                             </div>
-                            
-                            {/* Action Buttons */}
+                              {/* Action Buttons */}
                             <div className="flex items-center justify-between">
                               <div className="flex space-x-3">
                                 <Button 
@@ -561,12 +574,21 @@ const FindTalent = () => {
                                   <Mail className="h-4 w-4 mr-2" />
                                   Contact
                                 </Button>
-                                <Button variant="outline" size="icon" className="hover:bg-red-50 hover:border-red-200">
-                                  <Heart className="h-4 w-4" />
+                                <Button 
+                                  variant="outline" 
+                                  asChild
+                                  className="hover:bg-blue-50 hover:border-blue-200"
+                                >
+                                  <Link 
+                                    to={generatePublicProfileUrl(freelancer.profile.name || 'Anonymous User', freelancer.id)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Profile
+                                  </Link>
                                 </Button>
-                                <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-200">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
+
                               </div>
                               
                               {freelancer.availability && (

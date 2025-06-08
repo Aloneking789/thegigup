@@ -39,9 +39,7 @@ const createApiClient = (isMultipart = false) => {
       }
 
       return response.json();
-    },
-
-    post: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
+    },    post: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
       const headers = getHeaders();
       const config: RequestInit = {
         method: 'POST',
@@ -60,14 +58,22 @@ const createApiClient = (isMultipart = false) => {
 
       const response = await fetch(getApiUrl(endpoint), config);
 
+      // Parse response body for both success and error cases
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Create an error object similar to axios
+        const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        error.response = {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData
+        };
+        throw error;
       }
 
-      return response.json();
-    },
-
-    put: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
+      return responseData;
+    },put: async <T>(endpoint: string, data?: any): Promise<ApiResponse<T>> => {
       const headers = getHeaders();
       const config: RequestInit = {
         method: 'PUT',
@@ -86,11 +92,21 @@ const createApiClient = (isMultipart = false) => {
 
       const response = await fetch(getApiUrl(endpoint), config);
 
+      // Parse response body for both success and error cases
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Create an error object similar to axios
+        const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        error.response = {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData
+        };
+        throw error;
       }
 
-      return response.json();
+      return responseData;
     },
 
     delete: async <T>(endpoint: string): Promise<ApiResponse<T>> => {

@@ -1,5 +1,5 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Briefcase,
   Settings,
@@ -9,12 +9,19 @@ import {
   Clock,
   CheckCircle
 } from "lucide-react";
+import { logout } from "@/lib/config/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import MobileNav from "@/components/MobileNav";
 
 const About = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -27,16 +34,23 @@ const About = () => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
+            </div>            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-gray-600 hover:text-blue-600">Find Work</Link>
               <Link to="/about" className="text-blue-600 font-medium">About</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button variant="outline">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                Logout
+              </Button>
+              {/* <Button variant="outline">
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
-              </Button>
+              </Button> */}
             </nav>
             <MobileNav currentPath={location.pathname} />
           </div>
