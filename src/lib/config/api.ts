@@ -1,14 +1,14 @@
 // API Configuration
 export const API_CONFIG = {
   BASE_URL: 'https://freelancer-zfoo.onrender.com/api/v1',
-  ENDPOINTS: {
-    CLIENT: {
+  ENDPOINTS: {    CLIENT: {
       SIGNUP: '/client/signup',
       LOGIN: '/client/login',
       PROFILE: '/client/profile',
       PROJECTS: '/client/projects',
       DASHBOARD: '/client/dashboard',
-    },    FREELANCER: {
+      APPLICATIONS: '/client/applications',
+    },FREELANCER: {
       SIGNUP: '/freelancer/signup',
       LOGIN: '/freelancer/login',
       PROFILE: '/freelancer/profile',

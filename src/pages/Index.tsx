@@ -23,8 +23,25 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userRole, setUserRole] = useState<'FREELANCER' | 'CLIENT' | null>(null);
   const [selectedProject, setSelectedProject] = useState<FeaturedProject | null>(null);
-  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);  const navigate = useNavigate();
+
+  // Search functionality
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      if (userRole === 'CLIENT') {
+        navigate(`/find-talent?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        navigate(`/find-work?search=${encodeURIComponent(searchQuery.trim())}`);
+      }
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   // Check authentication status and fetch profile
   useEffect(() => {
     const checkAuthAndFetchProfile = async () => {
@@ -242,15 +259,24 @@ const Index = () => {
                   </>
                 )}
               </div>              {/* Search Bar and Actions */}
-              <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
-                <div className="relative">
+              <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">                <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
                     placeholder="Search for skills (e.g., React, Python, Design...)"
                     className="pl-10 h-12 text-lg border-gray-200 focus:border-blue-500"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
                   />
+                  {searchQuery.trim() && (
+                    <Button
+                      onClick={handleSearch}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 px-3"
+                      size="sm"
+                    >
+                      Search
+                    </Button>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -400,9 +426,12 @@ const Index = () => {
                           .map((n) => n[0])
                           .join("")}
                       </AvatarFallback>
-                    </Avatar>
-                    <CardTitle className="text-lg">{freelancer.profile.name}</CardTitle>
-                    <CardDescription className="text-blue-600 font-medium">{freelancer.profile.bio}</CardDescription>
+                    </Avatar>                    <CardTitle className="text-lg">{freelancer.profile.name}</CardTitle>
+                    <CardDescription className="text-blue-600 font-medium">
+                      {freelancer.profile.bio && freelancer.profile.bio.length > 20 
+                        ? `${freelancer.profile.bio.substring(0, 20)}...` 
+                        : freelancer.profile.bio || 'No bio available'}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex flex-wrap gap-1">

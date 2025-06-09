@@ -341,6 +341,37 @@ export interface ClientProjectApplication {
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;
+  freelancer: {
+    id: string;
+    userId: string;
+    age: number;
+    skills: string[];
+    experience: string;
+    projectsCompleted: number;
+    ratings: number;
+    hourlyRate: number;
+    availability: boolean;
+    githubUrl: string;
+    linkedinUrl: string;
+    portfolioUrl: string;
+    isVerified: boolean;
+    user: {
+      name: string;
+      email: string;
+      profileImage: string;
+      bio: string;
+      location: string;
+    };
+  };
+  project: {
+    id: string;
+    title: string;
+    description: string;
+    skillsRequired: string[];
+    budgetMin: number;
+    budgetMax: number;
+    status: string;
+  };
 }
 
 export interface ClientProjectsResponse {
@@ -388,6 +419,20 @@ export interface ClientDashboardResponse {
       projects: ClientProject[];
     };
     stats: ClientDashboardStats;
+  };
+}
+
+// Client Applications API Types
+export interface ClientApplicationsResponse {
+  success: boolean;
+  data: {
+    applications: ClientProjectApplication[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
   };
 }
 

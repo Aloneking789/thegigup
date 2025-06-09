@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Briefcase,
@@ -19,11 +19,18 @@ import { clientService } from "@/lib/api/client";
 import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
 import MobileNav from "@/components/MobileNav";
 
-const PostJob = () => {
-  const navigate = useNavigate();
+const PostJob = () => {  const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // User state management
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    email: string;
+    profileImage?: string;
+  } | null>(null);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -37,8 +44,19 @@ const PostJob = () => {
     "React", "Node.js", "Python", "JavaScript", "TypeScript", "PHP", "Java",
     "Figma", "Adobe XD", "Photoshop", "UI/UX Design", "Graphic Design",
     "Content Writing", "SEO", "Social Media Marketing", "Digital Marketing",
-    "HTML", "CSS", "MongoDB", "PostgreSQL", "Express.js", "Vue.js", "Angular"
-  ];
+    "HTML", "CSS", "MongoDB", "PostgreSQL", "Express.js", "Vue.js", "Angular"  ];
+
+  // Initialize user state
+  useEffect(() => {
+    const storedUserName = localStorage.getItem('userName') || 'User';
+    const storedUserEmail = localStorage.getItem('userEmail') || '';
+    setUserProfile({
+      name: storedUserName,
+      email: storedUserEmail,
+      profileImage: undefined
+    });
+  }, []);
+
   // Check if user is logged in and is a client
   if (!isLoggedIn() || !RoleStorage.isClient()) {
     navigate('/login');
@@ -190,7 +208,11 @@ const PostJob = () => {
                 Logout
               </Button>
             </nav>
-            <MobileNav currentPath={location.pathname} />
+            <MobileNav 
+              userLoggedIn={true}
+              userRole="CLIENT"
+              userProfile={userProfile}
+            />
           </div>
         </div>
       </header>

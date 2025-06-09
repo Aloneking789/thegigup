@@ -15,7 +15,8 @@ import {
   FreelancerApplicationsResponse,
   PublicJobsResponse,
   FeaturedProjectsResponse,
-  FeaturedFreelancersResponse
+  FeaturedFreelancersResponse,
+  ClientApplicationsResponse
 } from './types';
 
 export class ClientService {
@@ -187,7 +188,6 @@ export class ClientService {
 
     return response.json();
   }
-
   // Freelancer Rating
   async rateFreelancer(projectId: string, rating: number, review: string): Promise<ApiResponse<any>> {
     const response = await fetch(
@@ -201,6 +201,23 @@ export class ClientService {
 
     if (!response.ok) {
       throw new Error(`Failed to rate freelancer: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Get Client Applications
+  async getApplications(page: number = 1, limit: number = 10): Promise<ClientApplicationsResponse> {
+    const response = await fetch(
+      getApiUrl(`${API_CONFIG.ENDPOINTS.CLIENT.APPLICATIONS}?page=${page}&limit=${limit}`),
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch applications: ${response.statusText}`);
     }
 
     return response.json();

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -31,19 +31,28 @@ const FindWork = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [selectedJob, setSelectedJob] = useState<PublicJob | null>(null);
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [showProposalForm, setShowProposalForm] = useState(false);
+
+  // User state management
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<'CLIENT' | 'FREELANCER' | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    email: string;
+    profileImage?: string;
+  } | null>(null);
   
   // API state
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalResults, setTotalResults] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);  const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   // Debounce search term
@@ -51,8 +60,36 @@ const FindWork = () => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+    return () => clearTimeout(timer);  }, [searchTerm]);
+
+  // Initialize user state
+  useEffect(() => {
+    const loggedIn = isLoggedIn();
+    setUserLoggedIn(loggedIn);
+    
+    if (loggedIn) {
+      const role = RoleStorage.getRole();
+      setUserRole(role as 'CLIENT' | 'FREELANCER');
+      
+      // Get user profile data from localStorage or set default
+      const storedUserName = localStorage.getItem('userName') || 'User';
+      const storedUserEmail = localStorage.getItem('userEmail') || '';
+      setUserProfile({
+        name: storedUserName,
+        email: storedUserEmail,
+        profileImage: undefined
+      });
+    }
+  }, []);
+
+  // Handle URL search parameter
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, [searchParams]);
+
   // Fetch jobs when filters change
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
@@ -150,7 +187,11 @@ const FindWork = () => {
                 Logout
               </Button>
             </nav>
-            <MobileNav currentPath={location.pathname} />
+            <MobileNav 
+              userLoggedIn={userLoggedIn}
+              userRole={userRole}
+              userProfile={userProfile}
+            />
           </div>
         </div>
       </header>

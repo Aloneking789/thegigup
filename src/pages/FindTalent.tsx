@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -41,6 +41,7 @@ const FindTalent = () => {
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   // API state
   const [freelancers, setFreelancers] = useState<PublicFreelancer[]>([]);
@@ -103,8 +104,15 @@ const FindTalent = () => {
         email: storedUserEmail,
         profileImage: undefined
       });
+    }  }, []);
+
+  // Handle URL search parameter
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
     }
-  }, []);
+  }, [searchParams]);
 
   // Fetch freelancers
   const fetchFreelancers = async () => {
