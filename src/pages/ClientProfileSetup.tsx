@@ -137,7 +137,7 @@ const ClientProfileSetup = () => {
 
       toast({
         title: `Profile ${isEditMode ? 'Updated' : 'Created'} Successfully!`,
-        description: `Welcome to FreelanceHub. You can now ${isEditMode ? 'continue using the platform' : 'start posting projects'}.`,
+        description: `Welcome to TheGigUp. You can now ${isEditMode ? 'continue using the platform' : 'start posting projects'}.`,
       });
       navigate("/client-dashboard");
     } catch (error) {

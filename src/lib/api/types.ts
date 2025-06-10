@@ -39,6 +39,7 @@ export interface FreelancerProfile {
   experience: string; // Experience level/years
   portfolio: PortfolioItem[];
   profilePicture?: string;
+  profileImage?: string; // New field from API response
   resume: string;
   githubUrl?: string;
   linkedinUrl?: string;

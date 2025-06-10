@@ -217,7 +217,7 @@ const PublicProfile = () => {
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Briefcase className="w-5 h-5 text-white" />
                 </div>
-                <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
+                <Link to="/" className="text-xl font-bold text-gray-900">TheGigUp</Link>
               </div>
             </div>
 

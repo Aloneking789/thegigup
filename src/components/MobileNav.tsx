@@ -76,7 +76,7 @@ const MobileNav = ({ currentPath, userLoggedIn, userRole, userProfile }: MobileN
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
+              <span className="text-xl font-bold text-gray-900">TheGigUp</span>
             </div>
 
             {/* User Profile Section (if logged in) */}

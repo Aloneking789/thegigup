@@ -39,8 +39,7 @@ import {
   ClientDashboardStats, 
   ClientDashboardResponse,
   ClientProjectApplication,
-  ClientApplicationsResponse,
-  ClientProfileResponse
+  ClientApplicationsResponse
 } from "@/lib/api/types";
 import RatingModal from "@/components/RatingModal";
 import MobileNav from "@/components/MobileNav";
@@ -54,9 +53,7 @@ const ClientDashboard = () => {
   const [projects, setProjects] = useState<ClientProject[]>([]);
   const [applications, setApplications] = useState<ClientProjectApplication[]>([]);
   const [dashboardStats, setDashboardStats] = useState<ClientDashboardStats | null>(null);
-  const [profile, setProfile] = useState<ClientProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
   const [isApplicationsLoading, setIsApplicationsLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
@@ -71,6 +68,7 @@ const ClientDashboard = () => {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+
   // Check if user is a client, redirect if not
   useEffect(() => {
     if (!isLoggedIn() || !RoleStorage.isClient()) {
@@ -79,73 +77,7 @@ const ClientDashboard = () => {
     }
     fetchDashboardData();
     fetchApplications();
-    fetchProfile();
   }, [navigate]);
-
-  // Fetch client profile data
-  const fetchProfile = async () => {
-    try {
-      setIsLoadingProfile(true);
-      const response = await clientService.getProfile();
-      if (response.success && response.data) {
-        setProfile(response.data);
-      } else {
-        console.log('Profile not found, using fallback');
-        // Fallback to mock profile if API fails
-        const mockProfile: ClientProfileResponse = {
-          id: "1",
-          name: "Client User", 
-          email: "client@example.com",
-          password: "",
-          role: 'CLIENT',
-          profileImage: null,
-          bio: "Professional client looking for talented freelancers",
-          location: "New York, USA",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          client: {
-            id: "1",
-            userId: "1",
-            companyName: "TechCorp Inc.",
-            industry: "Technology",
-            companySize: "50-100",
-            website: "https://techcorp.com",
-            isVerified: true
-          }
-        };
-        setProfile(mockProfile);
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      // Set fallback profile even on error
-      const mockProfile: ClientProfileResponse = {
-        id: "1",
-        name: "Client User", 
-        email: "client@example.com",
-        password: "",
-        role: 'CLIENT',
-        profileImage: null,
-        bio: "Professional client looking for talented freelancers",
-        location: "New York, USA",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        client: {
-          id: "1",
-          userId: "1",
-          companyName: "TechCorp Inc.",
-          industry: "Technology",
-          companySize: "50-100",
-          website: "https://techcorp.com",
-          isVerified: true
-        }
-      };
-      setProfile(mockProfile);
-    } finally {
-      setIsLoadingProfile(false);
-    }
-  };
 
   const fetchDashboardData = async () => {
     try {
@@ -435,7 +367,8 @@ const ClientDashboard = () => {
       skill.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
-  if (isLoading || isLoadingProfile) {
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
@@ -447,7 +380,8 @@ const ClientDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -455,56 +389,47 @@ const ClientDashboard = () => {
               <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Briefcase className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
               </div>
-              <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900">
-                <span className="hidden sm:inline">TheGigUp</span>
-                <span className="sm:hidden">TheGigUp</span>
-              </Link>
+              <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900">TheGigUp</Link>
             </div>
             
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-3 sm:space-x-4">
-              <Button variant="outline" size="sm" className="text-sm">
-                <MessageSquare className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden lg:inline">Messages</span>
-                <span className="lg:hidden">Msgs</span>
+            <div className="hidden md:flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Messages
               </Button>
  
               {isLoggedIn() && (
-                <Button variant="outline" size="sm" onClick={handleLogout} className="text-sm">
-                  <LogOut className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="hidden lg:inline">Logout</span>
-                  <span className="lg:hidden">Exit</span>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
                 </Button>
               )}
-              <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10" onClick={handleProfileClick}>
-                <AvatarImage src={profile?.profileImage || undefined} />
-                <AvatarFallback className="text-xs sm:text-sm">
-                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'C'}
-                </AvatarFallback>
+              <Avatar className="cursor-pointer" onClick={handleProfileClick}>
+                <AvatarImage src="/placeholder.svg" />
+                <AvatarFallback>JD</AvatarFallback>
               </Avatar>
             </div>
 
-            {/* Mobile Navigation - Only Avatar */}
-            <div className="md:hidden">
+            {/* Mobile Navigation */}
+            <div className="md:hidden flex items-center space-x-2">
               <Avatar className="cursor-pointer w-8 h-8" onClick={handleProfileClick}>
-                <AvatarImage src={profile?.profileImage || undefined} />
-                <AvatarFallback className="text-xs">
-                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'C'}
-                </AvatarFallback>
+                <AvatarImage src="/placeholder.svg" />
+                <AvatarFallback className="text-xs">JD</AvatarFallback>
               </Avatar>
+              <MobileNav 
+                userLoggedIn={true}
+                userRole="CLIENT"
+                userProfile={{
+                  name: 'Client User',
+                  email: '',
+                  profileImage: '/placeholder.svg'
+                }}
+              />
             </div>
-          </div>        </div>
+          </div>
+        </div>
       </header>
-
-      <MobileNav 
-        userLoggedIn={true}
-        userRole="CLIENT"
-        userProfile={profile ? {
-          name: profile.name || 'Client User',
-          email: profile.email || '',
-          profileImage: profile.profileImage || undefined
-        } : undefined}
-      />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-20 sm:pb-8">
         <div className="mb-4 sm:mb-8">

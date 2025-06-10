@@ -50,7 +50,7 @@ const About = () => {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
+              <Link to="/" className="text-xl font-bold text-gray-900">TheGigUp</Link>
             </div>            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-gray-600 hover:text-blue-600">Find Work</Link>
@@ -88,7 +88,7 @@ const About = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About FreelanceHub
+            About TheGigUp
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We're building the world's work marketplace — a place where businesses and independent professionals can find each other and collaborate remotely.
@@ -103,7 +103,7 @@ const About = () => {
               To create economic opportunities for people around the world by connecting businesses with independent talent. We believe that talent is equally distributed, but opportunity is not.
             </p>
             <p className="text-gray-600 text-lg leading-relaxed">
-              FreelanceHub helps level the playing field by giving everyone access to the global economy, regardless of where they live.
+              TheGigUp helps level the playing field by giving everyone access to the global economy, regardless of where they live.
             </p>
           </div>
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
@@ -193,7 +193,7 @@ const About = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join millions of freelancers and clients who trust FreelanceHub for their projects
+            Join millions of freelancers and clients who trust TheGigUp for their projects
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">

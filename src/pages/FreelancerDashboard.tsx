@@ -155,8 +155,7 @@ const FreelancerDashboard = () => {
           if (response.success && response.data) {
             const profileData = response.data;
             const freelancerData = profileData.freelancer;
-            
-            // Map the API response to FreelancerProfile format
+              // Map the API response to FreelancerProfile format
             const mappedProfile: FreelancerProfile = {
               id: profileData.id || '',
               userId: freelancerData?.userId || '',
@@ -172,6 +171,7 @@ const FreelancerDashboard = () => {
               githubUrl: freelancerData?.githubUrl || '',
               linkedinUrl: freelancerData?.linkedinUrl || '',
               portfolioUrl: freelancerData?.portfolioUrl || '',
+              profileImage: profileData.profileImage || '', // Add profileImage from API
               // Legacy fields for compatibility
               title: '',
               overview: profileData.bio || '',
@@ -388,79 +388,133 @@ const FreelancerDashboard = () => {
   const handleProfileClick = () => {
     navigate('/profile');
   };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">      {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-white" />
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <Link to="/" className="text-xl font-bold text-gray-900">FreelanceHub</Link>
-            </div>            <div className="flex items-center space-x-4">
-              <Button variant="outline">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Messages
+              <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900">
+                <span className="hidden sm:inline">TheGigUp</span>
+                <span className="sm:hidden">TG</span>
+              </Link>
+            </div>            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-3 sm:space-x-4">
+              <Button variant="outline" size="sm" className="text-sm">
+                <MessageSquare className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden lg:inline">Messages</span>
+                <span className="lg:hidden">Msgs</span>
               </Button>
  
               {isLoggedIn() && (
-                <Button variant="outline" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                <Button variant="outline" size="sm" onClick={handleLogout} className="text-sm">
+                  <LogOut className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden lg:inline">Logout</span>
+                  <span className="lg:hidden">Exit</span>
                 </Button>
               )}
-              <Avatar className="cursor-pointer" onClick={handleProfileClick}>
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>RP</AvatarFallback>
+              <Avatar className="cursor-pointer w-8 h-8 sm:w-10 sm:h-10" onClick={handleProfileClick}>
+                <AvatarImage src={profile?.profileImage || profile?.profilePicture || undefined} />
+                <AvatarFallback className="text-xs sm:text-sm">
+                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            {/* Mobile Navigation - Only Avatar */}
+            <div className="md:hidden">
+              <Avatar className="cursor-pointer w-8 h-8" onClick={handleProfileClick}>
+                <AvatarImage src={profile?.profileImage || profile?.profilePicture || undefined} />
+                <AvatarFallback className="text-xs">
+                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                </AvatarFallback>
               </Avatar>
             </div>
           </div>        </div>
-      </header>
-
-      <MobileNav 
+      </header>      <MobileNav 
         userLoggedIn={true}
         userRole="FREELANCER"
         userProfile={profile ? {
-          name: profile.profile?.name || 'User',
-          email: profile.profile?.email || '',
-          profileImage: profile.profile?.profileImage
+          name: profile.name || 'User',
+          email: '',
+          profileImage: profile.profileImage || profile.profilePicture || undefined
         } : undefined}
       />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Freelancer Dashboard</h1>
-          <p className="text-gray-600">Find your next opportunity and manage your freelance career</p>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Freelancer Dashboard</h1>
+          <p className="text-sm sm:text-base text-gray-600">Find your next opportunity and manage your freelance career</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">          <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200">
-            <TabsTrigger value="jobs">Find Jobs</TabsTrigger>
-            <TabsTrigger value="assigned">Assigned Jobs</TabsTrigger>
-            <TabsTrigger value="applications">My Applications</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-          </TabsList><TabsContent value="jobs" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">          
+          {/* Mobile Tabs */}
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 bg-white border border-gray-200 h-auto p-1">
+            <TabsTrigger value="jobs" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Find Jobs</span>
+              <span className="sm:hidden">Jobs</span>
+            </TabsTrigger>
+            <TabsTrigger value="assigned" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Assigned Jobs</span>
+              <span className="sm:hidden">Assigned</span>
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">My Applications</span>
+              <span className="sm:hidden">Apps</span>
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="hidden sm:block text-sm py-2 px-3">Profile</TabsTrigger>
+            <TabsTrigger value="earnings" className="hidden sm:block text-sm py-2 px-3">Earnings</TabsTrigger>
+          </TabsList>
+
+          {/* Mobile Bottom Navigation for Profile and Earnings */}
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
+            <div className="grid grid-cols-2">
+              <button
+                onClick={() => setActiveTab("profile")}
+                className={`flex items-center justify-center py-3 px-4 text-xs font-medium ${
+                  activeTab === "profile" 
+                    ? "text-blue-600 bg-blue-50" 
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <User className="w-4 h-4 mr-1" />
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab("earnings")}
+                className={`flex items-center justify-center py-3 px-4 text-xs font-medium ${
+                  activeTab === "earnings" 
+                    ? "text-blue-600 bg-blue-50" 
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <DollarSign className="w-4 h-4 mr-1" />
+                Earnings
+              </button>
+            </div>
+          </div>          <TabsContent value="jobs" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
             {!isProfileComplete ? (
               /* Profile Completion Prompt */
               <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-                <CardContent className="p-8 text-center">
-                  <User className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile to Find Jobs</h3>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                <CardContent className="p-4 sm:p-8 text-center">
+                  <User className="w-12 h-12 sm:w-16 sm:h-16 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Complete Your Profile to Find Jobs</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto">
                     Your profile is {profileCompletion}% complete. Complete at least 60% of your profile to start seeing job recommendations.
                   </p>
-                  <div className="w-full bg-gray-200 rounded-full h-3 mb-6 max-w-sm mx-auto">
+                  <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mb-4 sm:mb-6 max-w-sm mx-auto">
                     <div 
-                      className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
+                      className="bg-blue-600 h-2 sm:h-3 rounded-full transition-all duration-300" 
                       style={{ width: `${profileCompletion}%` }}
                     ></div>
                   </div>
                   <Button 
                     onClick={handleCompleteProfile}
-                    className="bg-blue-600 hover:bg-blue-700 px-8 py-3"
+                    className="bg-blue-600 hover:bg-blue-700 px-6 sm:px-8 py-2 sm:py-3"
                   >
                     Complete Profile Now
                   </Button>
@@ -469,42 +523,43 @@ const FreelancerDashboard = () => {
             ) : (
               <>
                 {/* Search and Filters */}
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder="Search jobs by title, skills, or company..."
+                      placeholder="Search jobs by title, skills..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-gray-200 focus:border-blue-500"
+                      className="pl-10 border-gray-200 focus:border-blue-500 h-10 sm:h-11"
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" className="border-gray-200">
-                      <Filter className="w-4 h-4 mr-2" />
-                      Filter
+                    <Button variant="outline" className="border-gray-200 flex-1 sm:flex-none h-10 text-sm">
+                      <Filter className="w-4 h-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Filter</span>
                     </Button>
-                    <Button variant="outline" className="border-gray-200">
-                      Sort by: Latest
+                    <Button variant="outline" className="border-gray-200 flex-1 sm:flex-none h-10 text-sm">
+                      <span className="hidden sm:inline">Sort by: Latest</span>
+                      <span className="sm:hidden">Sort</span>
                     </Button>
                   </div>
                 </div>                {/* Loading State */}
                 {isLoadingJobs && (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-2">Loading available projects...</p>
+                  <div className="text-center py-6 sm:py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-sm sm:text-base text-gray-600 mt-2">Loading available projects...</p>
                   </div>
                 )}
 
                 {/* Job Listings */}
                 {!isLoadingJobs && (
-                  <div className="grid gap-6">
+                  <div className="grid gap-4 sm:gap-6">
                     {publicJobs.length === 0 ? (
                       <Card className="bg-white border-gray-200">
-                        <CardContent className="p-8 text-center">
-                          <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Jobs Available</h3>
-                          <p className="text-gray-600">
+                        <CardContent className="p-6 sm:p-8 text-center">
+                          <Briefcase className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Jobs Available</h3>
+                          <p className="text-sm sm:text-base text-gray-600">
                             There are no matching jobs available at the moment. Check back later for new opportunities.
                           </p>
                         </CardContent>
@@ -520,63 +575,70 @@ const FreelancerDashboard = () => {
                         )
                         .map((project) => (
                           <Card key={project.id} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6">
-                              <div className="space-y-4">
+                            <CardContent className="p-4 sm:p-6">
+                              <div className="space-y-3 sm:space-y-4">
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
-                                  <div className="space-y-2">                                    <div className="flex items-center gap-2">
-                                      <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>
-                                      {/* Remove isUrgent and isExperienced as they don't exist in PublicJobItem type */}
-                                    </div>                                    <div className="flex items-center text-gray-600 text-sm space-x-4">
+                                  <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">                                    <div className="flex items-start gap-2">
+                                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 line-clamp-2 pr-2">{project.title}</h3>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => toggleSaveJob(project.id)}
+                                        className={`shrink-0 p-1 h-8 w-8 ${savedJobs.includes(project.id) ? "text-red-500" : "text-gray-400"}`}
+                                      >
+                                        <Heart className={`w-4 h-4 ${savedJobs.includes(project.id) ? 'fill-current' : ''}`} />
+                                      </Button>
+                                    </div>                                    <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 text-sm space-y-1 sm:space-y-0 sm:space-x-4">
                                       <span className="font-medium">{project.client.company}</span>
                                       <div className="flex items-center">
-                                        <MapPin className="w-4 h-4 mr-1" />
+                                        <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                         <span>{project.client.location || 'Remote'}</span>
-                                      </div><div className="flex items-center">
-                                        <Clock className="w-4 h-4 mr-1" />
+                                      </div>
+                                      <div className="flex items-center">
+                                        <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                         <span>Posted {new Date(project.postedAt).toLocaleDateString()}</span>
                                       </div>
                                     </div>
                                   </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => toggleSaveJob(project.id)}
-                                    className={savedJobs.includes(project.id) ? "text-red-500" : "text-gray-400"}
-                                  >
-                                    <Heart className={`w-4 h-4 ${savedJobs.includes(project.id) ? 'fill-current' : ''}`} />
-                                  </Button>
                                 </div>
 
                                 {/* Budget and Type */}
-                                <div className="flex items-center space-x-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
                                   <div className="flex items-center">
-                                    <DollarSign className="w-4 h-4 mr-1 text-green-600" />                                    <span className="font-semibold text-gray-900">
+                                    <DollarSign className="w-4 h-4 mr-1 text-green-600" />                                    <span className="font-semibold text-gray-900 text-sm sm:text-base">
                                       ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()}
                                     </span>
-                                    <span className="text-gray-500 ml-1">({project.duration})</span>
-                                  </div>                                  <div className="flex items-center text-sm text-gray-600">
-                                    <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
-                                    <span>Client rating: {project.client.ratings || 'New client'}</span>
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    {project.applicationsCount || 0} applications
+                                    <span className="text-gray-500 ml-1 text-sm">({project.duration})</span>
+                                  </div>                                  <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                                    <div className="flex items-center">
+                                      <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-yellow-400 fill-current" />
+                                      <span>Client rating: {project.client.ratings || 'New client'}</span>
+                                    </div>
+                                    <div className="ml-4">
+                                      {project.applicationsCount || 0} applications
+                                    </div>
                                   </div>
                                 </div>                                {/* Description */}
-                                <p className="text-gray-600 line-clamp-2">{project.description}</p>
+                                <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-3">{project.description}</p>
 
-                                {/* Skills */}                                <div className="flex flex-wrap gap-2">
-                                  {project.skillsRequired?.map((skill) => (
+                                {/* Skills */}                                <div className="flex flex-wrap gap-1 sm:gap-2">
+                                  {project.skillsRequired?.slice(0, 4).map((skill) => (
                                     <Badge key={skill} variant="secondary" className="text-xs">
                                       {skill}
                                     </Badge>
                                   ))}
+                                  {project.skillsRequired && project.skillsRequired.length > 4 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{project.skillsRequired.length - 4} more
+                                    </Badge>
+                                  )}
                                 </div>                                {/* Actions */}
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 space-y-2 sm:space-y-0">
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    className="border-gray-200"
+                                    className="border-gray-200 w-full sm:w-auto"
                                     onClick={() => handleViewDetails(project)}
                                   >
                                     <Eye className="w-4 h-4 mr-1" />
@@ -584,7 +646,7 @@ const FreelancerDashboard = () => {
                                   </Button>
                                   
                                   <Button 
-                                    className="bg-blue-600 hover:bg-blue-700"
+                                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                                     onClick={() => handleViewDetails(project)}
                                   >
                                     <Send className="w-4 h-4 mr-2" />
@@ -599,11 +661,9 @@ const FreelancerDashboard = () => {
                   </div>
                 )}
               </>            )}
-          </TabsContent>
-
-          <TabsContent value="assigned" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Assigned Jobs</h2>
+          </TabsContent>          <TabsContent value="assigned" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Assigned Jobs</h2>
               <div className="text-sm text-gray-600">
                 {assignedProjects.length} active projects
               </div>
@@ -611,24 +671,24 @@ const FreelancerDashboard = () => {
 
             {/* Loading State */}
             {isLoadingAssigned && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading assigned projects...</p>
+              <div className="text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-sm sm:text-base text-gray-600 mt-2">Loading assigned projects...</p>
               </div>
             )}
 
             {/* Assigned Projects */}
             {!isLoadingAssigned && (
-              <div className="grid gap-6">
+              <div className="grid gap-4 sm:gap-6">
                 {assignedProjects.length === 0 ? (
                   <Card className="bg-white border-gray-200">
-                    <CardContent className="p-8 text-center">
-                      <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Assigned Projects</h3>
-                      <p className="text-gray-600 mb-6">
+                    <CardContent className="p-6 sm:p-8 text-center">
+                      <Briefcase className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Assigned Projects</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
                         You don't have any assigned projects yet. Start applying to jobs to get your first project.
                       </p>
-                      <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setActiveTab("jobs")}>
+                      <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" onClick={() => setActiveTab("jobs")}>
                         <Search className="w-4 h-4 mr-2" />
                         Find Jobs
                       </Button>
@@ -637,13 +697,13 @@ const FreelancerDashboard = () => {
                 ) : (
                   assignedProjects.map((project) => (
                     <Card key={project.id} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="space-y-3 sm:space-y-4">
                           {/* Header */}
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>                                <Badge className={
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
+                            <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 line-clamp-2">{project.title}</h3>                                <Badge className={
                                   project.status === 'IN_PROGRESS' 
                                     ? "bg-green-100 text-green-800"
                                     : project.status === 'COMPLETED'
@@ -652,13 +712,13 @@ const FreelancerDashboard = () => {
                                 }>
                                   {project.status}
                                 </Badge>
-                              </div>                              <div className="flex items-center text-gray-600 text-sm space-x-4">
+                              </div>                              <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 text-sm space-y-1 sm:space-y-0 sm:space-x-4">
                                 <span className="font-medium">{project.client.user.name}</span>                                <div className="flex items-center">
-                                  <Calendar className="w-4 h-4 mr-1" />
+                                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                   <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
                                 </div>                              </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-left sm:text-right">
                               <div className="text-lg font-semibold text-gray-900">
                                 ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()}
                               </div>
@@ -666,23 +726,28 @@ const FreelancerDashboard = () => {
                             </div>
                           </div>
 
-                          {/* Progress */}                          {/* Description */}
-                          <p className="text-gray-600 line-clamp-2">{project.description}</p>
+                          {/* Description */}
+                          <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-3">{project.description}</p>
 
-                          {/* Skills */}                          <div className="flex flex-wrap gap-2">
-                            {project.skillsRequired?.map((skill) => (
+                          {/* Skills */}                          <div className="flex flex-wrap gap-1 sm:gap-2">
+                            {project.skillsRequired?.slice(0, 4).map((skill) => (
                               <Badge key={skill} variant="secondary" className="text-xs">
                                 {skill}
                               </Badge>
                             ))}
+                            {project.skillsRequired && project.skillsRequired.length > 4 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{project.skillsRequired.length - 4} more
+                              </Badge>
+                            )}
                           </div>                          {/* Actions */}
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="border-gray-200">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-100 space-y-2 sm:space-y-0">
+                            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                              <Button variant="outline" size="sm" className="border-gray-200 w-full sm:w-auto">
                                 <Eye className="w-4 h-4 mr-1" />
                                 View Details
                               </Button>
-                              <Button variant="outline" size="sm" className="border-gray-200">
+                              <Button variant="outline" size="sm" className="border-gray-200 w-full sm:w-auto">
                                 <MessageSquare className="w-4 h-4 mr-1" />
                                 Message Client
                               </Button>
@@ -690,7 +755,7 @@ const FreelancerDashboard = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="border-green-200 text-green-700 hover:bg-green-50"
+                                  className="border-green-200 text-green-700 hover:bg-green-50 w-full sm:w-auto"
                                   onClick={() => handleRequestCompletion(project.id)}
                                 >
                                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -699,7 +764,7 @@ const FreelancerDashboard = () => {
                               )}
                             </div>
                             {project.status === 'COMPLETED' && (
-                              <Button variant="outline" size="sm" className="border-gray-200">
+                              <Button variant="outline" size="sm" className="border-gray-200 w-full sm:w-auto">
                                 <FileText className="w-4 h-4 mr-1" />
                                 View Invoice
                               </Button>
@@ -712,9 +777,9 @@ const FreelancerDashboard = () => {
                 )}
               </div>
             )}
-          </TabsContent>          <TabsContent value="applications" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">My Applications</h2>
+          </TabsContent>          <TabsContent value="applications" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Applications</h2>
               <div className="text-sm text-gray-600">
                 {applications.length} applications submitted
               </div>
@@ -722,24 +787,24 @@ const FreelancerDashboard = () => {
 
             {/* Loading State */}
             {isLoadingApplications && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading applications...</p>
+              <div className="text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-sm sm:text-base text-gray-600 mt-2">Loading applications...</p>
               </div>
             )}
 
             {/* Applications */}
             {!isLoadingApplications && (
-              <div className="grid gap-4">
+              <div className="grid gap-3 sm:gap-4">
                 {applications.length === 0 ? (
                   <Card className="bg-white border-gray-200">
-                    <CardContent className="p-8 text-center">
-                      <Send className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Applications Yet</h3>
-                      <p className="text-gray-600 mb-6">
+                    <CardContent className="p-6 sm:p-8 text-center">
+                      <Send className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Applications Yet</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
                         Start applying to jobs to track your applications here.
                       </p>
-                      <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setActiveTab("jobs")}>
+                      <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" onClick={() => setActiveTab("jobs")}>
                         <Search className="w-4 h-4 mr-2" />
                         Find Jobs
                       </Button>
@@ -748,23 +813,23 @@ const FreelancerDashboard = () => {
                 ) : (
                   applications.map((application) => (
                     <Card key={application.id} className="bg-white border-gray-200">
-                      <CardContent className="p-6">                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <h3 className="text-lg font-semibold text-gray-900">{application.project.title}</h3>
-                            <p className="text-gray-600">{application.project.client.user.name}</p>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <CardContent className="p-4 sm:p-6">                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
+                          <div className="space-y-2 flex-1 min-w-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-2">{application.project.title}</h3>
+                            <p className="text-sm sm:text-base text-gray-600">{application.project.client.user.name}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600">
                               <div className="flex items-center">
-                                <Calendar className="w-4 h-4 mr-1" />
+                                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                 <span>Applied {new Date(application.createdAt).toLocaleDateString()}</span>
                               </div>
                               <div className="flex items-center">
-                                <DollarSign className="w-4 h-4 mr-1" />
+                                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                 <span>Budget: ₹{application.project.budgetMin.toLocaleString()} - ₹{application.project.budgetMax.toLocaleString()}</span>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 line-clamp-2">{application.proposal}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3">{application.proposal}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left sm:text-right">
                             <Badge 
                               className={
                                 application.status === "APPROVED" 
@@ -784,15 +849,15 @@ const FreelancerDashboard = () => {
                 )}
               </div>
             )}
-          </TabsContent><TabsContent value="profile" className="space-y-6">
+          </TabsContent>          <TabsContent value="profile" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
             {/* Profile Completion */}
             <Card className="bg-white border-gray-200">
-              <CardHeader>
-                <CardTitle>Profile Completion</CardTitle>
-                <CardDescription>Complete your profile to get more opportunities</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Profile Completion</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Complete your profile to get more opportunities</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">Profile Completion</span>
                     <span className="text-sm text-gray-500">{profileCompletion}%</span>
@@ -802,48 +867,48 @@ const FreelancerDashboard = () => {
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
                       style={{ width: `${profileCompletion}%` }}
                     ></div>
-                  </div>                  <div className="space-y-2 text-sm text-gray-600">
+                  </div>                  <div className="space-y-2 text-xs sm:text-sm text-gray-600">
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.name && profile?.bio ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Basic information (name & bio) {profile?.name && profile?.bio ? 'completed' : 'needed'}
+                      <span className="text-xs sm:text-sm">Basic information (name & bio) {profile?.name && profile?.bio ? 'completed' : 'needed'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.location ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Location {profile?.location ? 'added' : 'needed'}
+                      <span className="text-xs sm:text-sm">Location {profile?.location ? 'added' : 'needed'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.age ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Age {profile?.age ? 'added' : 'optional'}
+                      <span className="text-xs sm:text-sm">Age {profile?.age ? 'added' : 'optional'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.skills && profile.skills.length > 0 ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Skills {profile?.skills && profile.skills.length > 0 ? 'added' : 'needed'}
+                      <span className="text-xs sm:text-sm">Skills {profile?.skills && profile.skills.length > 0 ? 'added' : 'needed'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.experience ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Experience {profile?.experience ? 'added' : 'needed'}
+                      <span className="text-xs sm:text-sm">Experience {profile?.experience ? 'added' : 'needed'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.hourlyRate ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Hourly rate {profile?.hourlyRate ? 'set' : 'needed'}
+                      <span className="text-xs sm:text-sm">Hourly rate {profile?.hourlyRate ? 'set' : 'needed'}</span>
                     </div>
                     <div className="flex items-center">
                       <div className={`w-2 h-2 rounded-full mr-2 ${
                         profile?.linkedinUrl || profile?.portfolioUrl || profile?.githubUrl ? 'bg-green-500' : 'bg-gray-300'
                       }`}></div>
-                      Professional links {profile?.linkedinUrl || profile?.portfolioUrl || profile?.githubUrl ? 'added' : 'recommended'}
+                      <span className="text-xs sm:text-sm">Professional links {profile?.linkedinUrl || profile?.portfolioUrl || profile?.githubUrl ? 'added' : 'recommended'}</span>
                     </div>
                   </div>
                   <Button 
@@ -857,97 +922,95 @@ const FreelancerDashboard = () => {
             </Card>
 
             {/* Profile Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Profile Views</CardTitle>
                   <Eye className="h-4 w-4 text-blue-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">127</div>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold">127</div>
                   <p className="text-xs text-gray-600">This month</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Profile Rating</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Profile Rating</CardTitle>
                   <Star className="h-4 w-4 text-yellow-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">4.9</div>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold">4.9</div>
                   <p className="text-xs text-gray-600">Based on 23 reviews</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Success Rate</CardTitle>
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">92%</div>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold">92%</div>
                   <p className="text-xs text-gray-600">Project completion</p>
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="earnings" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          </TabsContent>          <TabsContent value="earnings" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Total Earnings</CardTitle>
                   <DollarSign className="h-4 w-4 text-green-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹000</div>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">All time</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">This Month</CardTitle>
                   <Calendar className="h-4 w-4 text-blue-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹000</div>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">+15% from last month</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Available</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Available</CardTitle>
                   <Award className="h-4 w-4 text-purple-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹000</div>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
                   <p className="text-xs text-gray-600">Ready to withdraw</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Rate</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium">Average Rate</CardTitle>
                   <Clock className="h-4 w-4 text-orange-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹00</div>
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-lg sm:text-2xl font-bold">₹00</div>
                   <p className="text-xs text-gray-600">Average rate</p>
                 </CardContent>
               </Card>
             </div>
 
             <Card className="bg-white border-gray-200">
-              <CardHeader>
-                <CardTitle>Recent Payments</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Recent Payments</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No recent payments to show</p>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="text-center py-6 sm:py-8">
+                  <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm sm:text-base text-gray-600">No recent payments to show</p>
                 </div>
               </CardContent>            </Card>
           </TabsContent>        </Tabs>

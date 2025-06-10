@@ -154,7 +154,7 @@ const FreelancerProfileSetup = () => {
         console.log('Create result:', result);
         toast({
           title: "Profile Created Successfully!",
-          description: "Welcome to FreelanceHub. Your profile is now live.",
+          description: "Welcome to TheGigUp. Your profile is now live.",
         });
       }
       

@@ -86,7 +86,7 @@ const Signup = () => {
 
         toast({
           title: "Account created successfully!",
-          description: "Welcome to FreelanceHub",
+          description: "Welcome to TheGigUp",
         });
         
         // Navigate to profile setup based on role
@@ -122,14 +122,14 @@ const Signup = () => {
           <Link to="/" className="inline-flex items-center space-x-2">
             <Briefcase className="w-8 h-8 text-blue-600" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              FreelanceHub
+              TheGigUp
             </h1>
           </Link>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-gray-800">Join FreelanceHub</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-800">Join TheGigUp</CardTitle>
             <p className="text-gray-600">Create your account to get started</p>
           </CardHeader>
           

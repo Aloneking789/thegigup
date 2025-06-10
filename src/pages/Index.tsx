@@ -142,7 +142,7 @@ const Index = () => {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">FreelanceHub</span>
+              <span className="text-xl font-bold text-gray-900">TheGigUp</span>
             </div>            <nav className="hidden md:flex items-center space-x-6">
               {userLoggedIn ? (
                 // Authenticated user navigation
@@ -643,7 +643,7 @@ const Index = () => {
               <>
                 <h2 className="text-3xl md:text-4xl font-bold text-white">Ready to get started?</h2>
                 <p className="text-xl text-blue-100">
-                  Join thousands of clients and freelancers who trust FreelanceHub for their projects
+                  Join thousands of clients and freelancers who trust TheGigUp for their projects
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 
@@ -677,7 +677,7 @@ const Index = () => {
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Briefcase className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">FreelanceHub</span>
+                <span className="text-xl font-bold">TheGigUp</span>
               </div>
               <p className="text-gray-400">Connecting talented freelancers with amazing projects worldwide.</p>
             </div>
@@ -760,7 +760,7 @@ const Index = () => {
               </ul>
             </div>
           </div>          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 FreelanceHub. All rights reserved.</p>
+            <p>&copy; 2024 TheGigUp. All rights reserved.</p>
           </div>
         </div>
       </footer>
