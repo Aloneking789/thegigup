@@ -468,6 +468,31 @@ export interface PublicFreelancer {
   }[];
 }
 
+// Client-side freelancer with email access
+export interface ClientFreelancer {
+  id: string;
+  userId: string;
+  age: number;
+  skills: string[];
+  experience: string;
+  projectsCompleted: number;
+  ratings: number;
+  hourlyRate: number;
+  availability: boolean;
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  portfolioUrl: string | null;
+  isVerified: boolean;
+  user: {
+    name: string;
+    email: string;
+    profileImage: string | null;
+    bio: string;
+    location: string;
+    createdAt: string;
+  };
+}
+
 export interface PublicJob {
   id: string;
   title: string;

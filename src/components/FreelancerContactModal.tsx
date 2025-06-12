@@ -17,6 +17,7 @@ interface Freelancer {
   reviews: number;
   location: string;
   bio: string;
+  email?: string; // Add email field
 }
 
 interface FreelancerContactModalProps {
@@ -29,7 +30,6 @@ const FreelancerContactModal = ({ freelancer, isOpen, onClose }: FreelancerConta
   const { toast } = useToast();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-
   const handleSendMessage = () => {
     if (!subject || !message) {
       toast({
@@ -40,9 +40,24 @@ const FreelancerContactModal = ({ freelancer, isOpen, onClose }: FreelancerConta
       return;
     }
 
+    if (!freelancer?.email) {
+      toast({
+        title: "Error",
+        description: "Freelancer email not available.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create Gmail mailto link
+    const mailtoLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(freelancer.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+    
+    // Open Gmail in a new tab
+    window.open(mailtoLink, '_blank');
+
     toast({
-      title: "Message Sent!",
-      description: `Your message has been sent to ${freelancer?.name}.`,
+      title: "Opening Gmail",
+      description: `Gmail is opening with your message to ${freelancer?.name}.`,
     });
     
     setSubject("");

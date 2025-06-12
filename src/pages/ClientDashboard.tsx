@@ -349,10 +349,25 @@ const ClientDashboard = () => {
     setSelectedApplicant(applicant);
     setIsApplicantModalOpen(true);
   };
-
   const handleCloseApplicantModal = () => {
     setSelectedApplicant(null);
     setIsApplicantModalOpen(false);
+  };
+
+  // Handle message freelancer
+  const handleMessageFreelancer = (freelancerEmail: string, freelancerName: string, projectTitle: string) => {
+    const subject = encodeURIComponent(`Project Inquiry: ${projectTitle}`);
+    const body = encodeURIComponent(`Hi ${freelancerName},
+
+I'm interested in discussing your application for the project "${projectTitle}".
+
+Looking forward to hearing from you.
+
+Best regards,
+${profile?.name || 'Client'}`);
+    
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(freelancerEmail)}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, '_blank');
   };
 
   // Project filtering functions
@@ -463,11 +478,11 @@ const ClientDashboard = () => {
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-3 sm:space-x-4">
-              <Button variant="outline" size="sm" className="text-sm">
+              {/* <Button variant="outline" size="sm" className="text-sm">
                 <MessageSquare className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden lg:inline">Messages</span>
                 <span className="lg:hidden">Msgs</span>
-              </Button>
+              </Button> */}
  
               {isLoggedIn() && (
                 <Button variant="outline" size="sm" onClick={handleLogout} className="text-sm">
@@ -669,10 +684,7 @@ const ClientDashboard = () => {
                     className="pl-10 border-gray-200 focus:border-blue-500 h-10"
                   />
                 </div>
-                <Button variant="outline" className="border-gray-200 h-10">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filter
-                </Button>
+
               </div>
               <Button onClick={handlePostNewJob} className="bg-blue-600 hover:bg-blue-700 h-10">
                 <Plus className="w-4 h-4 mr-2" />
@@ -823,9 +835,9 @@ const ClientDashboard = () => {
                       className="pl-10 border-gray-200 focus:border-blue-500 h-10"
                     />
                   </div>
-                  <Button variant="outline" className="border-gray-200 h-10 px-3">
+                  {/* <Button variant="outline" className="border-gray-200 h-10 px-3">
                     <Filter className="w-4 h-4" />
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>
@@ -939,8 +951,7 @@ const ClientDashboard = () => {
                                   
                                   {/* Action Buttons */}
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-gray-100 gap-3 sm:gap-0">
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                      <Button 
+                                    <div className="flex flex-col sm:flex-row gap-2">                                      <Button 
                                         variant="outline" 
                                         size="sm"
                                         onClick={() => handleOpenApplicantModal(application)}
@@ -950,7 +961,16 @@ const ClientDashboard = () => {
                                         View Details
                                       </Button>
                                       
-                                      <Button variant="outline" size="sm" className="border-gray-200 text-xs">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="border-gray-200 text-xs"
+                                        onClick={() => handleMessageFreelancer(
+                                          application.freelancer?.user?.email || '',
+                                          application.freelancer?.user?.name || 'Freelancer',
+                                          project.title
+                                        )}
+                                      >
                                         <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                         Message
                                       </Button>
@@ -1103,8 +1123,7 @@ const ClientDashboard = () => {
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Button 
+                  <div className="flex flex-wrap gap-2 pt-2">                    <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => handleViewApplicantProfile(selectedApplicant)}
@@ -1113,7 +1132,16 @@ const ClientDashboard = () => {
                       <ExternalLink className="w-4 h-4 mr-1" />
                       View Full Profile
                     </Button>
-                    <Button variant="outline" size="sm" className="border-gray-200">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-gray-200"
+                      onClick={() => handleMessageFreelancer(
+                        selectedApplicant.freelancer.user.email,
+                        selectedApplicant.freelancer.user.name,
+                        selectedApplicant.project.title
+                      )}
+                    >
                       <MessageSquare className="w-4 h-4 mr-1" />
                       Send Message
                     </Button>

@@ -20,7 +20,15 @@ import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import PostJob from "./pages/PostJob";
 import PublicProfile from "./pages/PublicProfile";
+import HowToFindWork from "./pages/HowToFindWork";
+import SkillDevelopment from "./pages/SkillDevelopment";
+import SuccessStories from "./pages/SuccessStories";
 import NotFound from "./pages/NotFound";
+import Careers from "./pages/Careers";
+import Press from "./pages/Press";
+import ContactSupport from "./pages/ContactSupport";
+import GetStarted from "./pages/GetStarted";
+import SuccessTips from "./pages/SuccessTips";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +39,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>        <Routes>          {/* Public routes - only accessible when not logged in */}
           <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/about" element={<About />} />          <Route path="/how-to-find-work" element={<HowToFindWork />} />
+          <Route path="/skill-development" element={<SkillDevelopment />} />
+          <Route path="/success-stories" element={<SuccessStories />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/contact-support" element={<ContactSupport />} />
+          <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/success-tips" element={<SuccessTips />} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/client-signup" element={<PublicRoute><Signup /></PublicRoute>} />

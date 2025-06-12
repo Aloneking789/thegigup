@@ -33,9 +33,10 @@ const Profile = () => {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<'FREELANCER' | 'CLIENT' | null>(null);
   const [profileData, setProfileData] = useState<FreelancerProfileResponse | ClientProfileResponse | null>(null);
+  const [freelancerDashboardData, setFreelancerDashboardData] = useState<any>(null);
+  const [ratingsData, setRatingsData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -54,6 +55,23 @@ const Profile = () => {
         // Fetch profile data based on role
         let response;
         if (role === 'FREELANCER') {
+          // Fetch freelancer dashboard data which contains more detailed info
+          const dashboardResponse = await freelancerService.getDashboard();
+          if (dashboardResponse?.success) {
+            setFreelancerDashboardData(dashboardResponse.data);
+          }
+
+          // Fetch ratings
+          const ratingsResponse = await freelancerService.getRatings();
+          if (ratingsResponse?.success) {
+            // Filter only CLIENT_TO_FREELANCER ratings
+            const clientRatings = ratingsResponse.data.ratings.filter(
+              (rating: any) => rating.type === 'CLIENT_TO_FREELANCER'
+            );
+            setRatingsData(clientRatings);
+          }
+
+          // Fetch basic profile
           response = await freelancerService.getProfile();
         } else if (role === 'CLIENT') {
           response = await clientService.getProfile();
@@ -115,11 +133,11 @@ const Profile = () => {
           </Button>
         </div>
       </div>
-    );  }
-  // Check if it's freelancer profile
+    );  }  // Check if it's freelancer profile
   const isFreelancer = userRole === 'FREELANCER';
-  const freelancerData = isFreelancer ? (profileData as any).freelancer : null;
+  const freelancerData = isFreelancer ? freelancerDashboardData?.freelancer : null;
   const clientData = !isFreelancer ? (profileData as any).client : null;
+  const completedProjects = freelancerData?.assignedProjects?.filter((project: any) => project.status === 'COMPLETED') || [];
 
   const handleLogout = () => {
     logout();
@@ -333,9 +351,7 @@ const Profile = () => {
                     {profileData.bio || 'No bio provided yet.'}
                   </p>
                 </CardContent>
-              </Card>
-
-              {isFreelancer && (
+              </Card>              {isFreelancer && (
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle>Skills</CardTitle>
@@ -343,8 +359,8 @@ const Profile = () => {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {freelancerData?.skills && freelancerData.skills.length > 0 ? (
-                        freelancerData.skills.map((skill) => (
-                          <Badge key={skill} variant="secondary">
+                        freelancerData.skills.map((skill: string) => (
+                          <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700">
                             {skill}
                           </Badge>
                         ))
@@ -385,37 +401,39 @@ const Profile = () => {
                   </CardContent>
                 </Card>
               )}
-              
-              {isFreelancer && (
+                {isFreelancer && (
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
                     <CardTitle>Portfolio Links</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {freelancerData?.githubUrl && (
                         <div className="flex items-center text-sm">
-                          <span className="w-16 text-gray-500">GitHub:</span>
-                          <a href={freelancerData.githubUrl} target="_blank" rel="noopener noreferrer" 
-                             className="text-blue-600 hover:underline">
+                          <span className="w-16 text-gray-500 font-medium">GitHub:</span>
+                          <a href={freelancerData.githubUrl.startsWith('http') ? freelancerData.githubUrl : `https://${freelancerData.githubUrl}`} 
+                             target="_blank" rel="noopener noreferrer" 
+                             className="text-blue-600 hover:underline truncate">
                             {freelancerData.githubUrl}
                           </a>
                         </div>
                       )}
                       {freelancerData?.linkedinUrl && (
                         <div className="flex items-center text-sm">
-                          <span className="w-16 text-gray-500">LinkedIn:</span>
-                          <a href={freelancerData.linkedinUrl} target="_blank" rel="noopener noreferrer" 
-                             className="text-blue-600 hover:underline">
+                          <span className="w-16 text-gray-500 font-medium">LinkedIn:</span>
+                          <a href={freelancerData.linkedinUrl.startsWith('http') ? freelancerData.linkedinUrl : `https://${freelancerData.linkedinUrl}`} 
+                             target="_blank" rel="noopener noreferrer" 
+                             className="text-blue-600 hover:underline truncate">
                             {freelancerData.linkedinUrl}
                           </a>
                         </div>
                       )}
                       {freelancerData?.portfolioUrl && (
                         <div className="flex items-center text-sm">
-                          <span className="w-16 text-gray-500">Portfolio:</span>
-                          <a href={freelancerData.portfolioUrl} target="_blank" rel="noopener noreferrer" 
-                             className="text-blue-600 hover:underline">
+                          <span className="w-16 text-gray-500 font-medium">Portfolio:</span>
+                          <a href={freelancerData.portfolioUrl.startsWith('http') ? freelancerData.portfolioUrl : `https://${freelancerData.portfolioUrl}`} 
+                             target="_blank" rel="noopener noreferrer" 
+                             className="text-blue-600 hover:underline truncate">
                             {freelancerData.portfolioUrl}
                           </a>
                         </div>
@@ -432,18 +450,56 @@ const Profile = () => {
             {isFreelancer ? (
               <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Portfolio Projects</CardTitle>
-                  <CardDescription>Showcase your best work</CardDescription>
+                  <CardTitle>Completed Projects</CardTitle>
+                  <CardDescription>Projects you have successfully completed</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Portfolio Items Yet</h3>
-                    <p className="text-gray-600 mb-6">Add your best work to showcase your skills</p>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      Add Portfolio Item
-                    </Button>
-                  </div>
+                  {completedProjects && completedProjects.length > 0 ? (
+                    <div className="space-y-6">
+                      {completedProjects.map((project: any) => (
+                        <div key={project.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-semibold text-xl text-gray-900">{project.title}</h4>
+                              <Badge className="mt-2 bg-green-100 text-green-800 border-green-200">
+                                Completed
+                              </Badge>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-gray-900">
+                                ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()}
+                              </div>
+                              <div className="text-sm text-gray-500">Budget</div>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-600 mb-4 leading-relaxed">{project.description}</p>
+                          
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {project.skillsRequired.map((skill: string) => (
+                              <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700">
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                          
+                          <div className="flex justify-between items-center text-sm text-gray-500">
+                            <div className="flex items-center space-x-4">
+                              <span>Duration: {project.duration}</span>
+                              <span>•</span>
+                              <span>Completed: {new Date(project.updatedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Completed Projects Yet</h3>
+                      <p className="text-gray-600">Complete your first project to build your portfolio</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -491,20 +547,98 @@ const Profile = () => {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="reviews">
+          </TabsContent>          <TabsContent value="reviews">
             <Card className="bg-white border-gray-200">
               <CardHeader>
                 <CardTitle>Client Reviews</CardTitle>
                 <CardDescription>What clients say about your work</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                  <p className="text-gray-600">Complete your first project to start receiving reviews</p>
-                </div>
+                {ratingsData && ratingsData.length > 0 ? (
+                  <div className="space-y-6">
+                    {ratingsData.map((rating: any) => (
+                      <div key={rating.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={rating.otherParty.profileImage || undefined} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {rating.otherParty.name?.charAt(0)?.toUpperCase() || 'C'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-medium text-gray-900">{rating.otherParty.name}</h4>
+                              <p className="text-sm text-gray-500">Client</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center mb-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-4 h-4 ${
+                                    star <= rating.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                              <span className="ml-2 text-sm font-medium text-gray-700">
+                                {rating.rating}/5
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {new Date(rating.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-3">
+                          <p className="text-sm font-medium text-blue-600 mb-1">
+                            Project: {rating.project.title}
+                          </p>
+                          <p className="text-gray-700 leading-relaxed">{rating.review}</p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Rating Summary */}
+                    <div className="bg-gray-50 rounded-lg p-4 mt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-900">Overall Rating</h4>
+                          <div className="flex items-center mt-1">
+                            <div className="flex items-center">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-5 h-5 ${
+                                    star <= Math.round(ratingsData.reduce((acc: number, r: any) => acc + r.rating, 0) / ratingsData.length)
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="ml-2 text-lg font-bold text-gray-900">
+                              {(ratingsData.reduce((acc: number, r: any) => acc + r.rating, 0) / ratingsData.length).toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-gray-900">{ratingsData.length}</p>
+                          <p className="text-sm text-gray-500">Reviews</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                    <p className="text-gray-600">Complete your first project to start receiving reviews</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

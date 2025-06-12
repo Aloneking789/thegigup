@@ -193,10 +193,31 @@ const PublicProfile = () => {
     : clientData?.profile?.location || 'Location not specified';
   const profileImage = isFreelancer 
     ? freelancerData?.profile?.profileImage
-    : clientData?.profile?.profileImage;
-  const memberSince = isFreelancer 
+    : clientData?.profile?.profileImage;  const memberSince = isFreelancer 
     ? freelancerData?.profile?.memberSince
     : clientData?.profile?.memberSince;
+
+  // Function to generate Gmail compose URL
+  const generateGmailUrl = () => {
+    const subject = encodeURIComponent(`Project Inquiry - ${displayName}`);
+    const body = encodeURIComponent(
+      `Hi ${displayName},\n\nI found your profile on TheGigUp and I'm interested in discussing a potential project with you.\n\nBest regards`
+    );
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(displayEmail)}&su=${subject}&body=${body}`;
+  };
+
+  // Function to handle contact button click
+  const handleContactClick = () => {
+    if (displayEmail && displayEmail !== 'Email not available') {
+      window.open(generateGmailUrl(), '_blank');
+    } else {
+      toast({
+        title: "Email not available",
+        description: "This user hasn't provided an email address.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">      {/* Header */}
@@ -204,7 +225,7 @@ const PublicProfile = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(-1)}
@@ -212,7 +233,7 @@ const PublicProfile = () => {
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
-              </Button>
+              </Button> */}
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Briefcase className="w-5 h-5 text-white" />
@@ -316,20 +337,21 @@ const PublicProfile = () => {
                     <MapPin className="w-4 h-4 mr-2" />
                     {displayLocation}
                   </div>
-                </div>
-
-                {isLoggedInUser && (
+                </div>                {isLoggedInUser && (
                   <div className="flex gap-4">
-                    <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={handleContactClick}
+                    >
                       <Mail className="w-4 h-4 mr-2" />
                       Contact {isFreelancer ? 'Freelancer' : 'Client'}
                     </Button>
-                    {isFreelancer && (
+                    {/* {isFreelancer && (
                       <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
                         <Briefcase className="w-4 h-4 mr-2" />
                         Hire Now
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 )}
               </div>
@@ -384,16 +406,99 @@ const PublicProfile = () => {
 
               <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Member Since</CardTitle>
-                  <Calendar className="h-4 w-4 text-purple-600" />
+                  <CardTitle className="text-sm font-medium">
+                    {isFreelancer ? 'Average Rating' : 'Member Since'}
+                  </CardTitle>
+                  {isFreelancer ? (
+                    <Star className="h-4 w-4 text-yellow-500" />
+                  ) : (
+                    <Calendar className="h-4 w-4 text-purple-600" />
+                  )}
                 </CardHeader>                <CardContent>
                   <div className="text-2xl font-bold">
-                    {formatMemberSince(memberSince || '')}
+                    {isFreelancer 
+                      ? `${freelancerData?.statistics?.averageRating || 0}/5`
+                      : formatMemberSince(memberSince || '')
+                    }
                   </div>
-                  <p className="text-xs text-gray-600">Join date</p>
+                  <p className="text-xs text-gray-600">
+                    {isFreelancer 
+                      ? `${freelancerData?.statistics?.totalRatings || 0} reviews`
+                      : 'Join date'
+                    }
+                  </p>
                 </CardContent>
               </Card>
-            </div>            {/* Bio and Skills */}
+            </div>
+
+            {/* Additional Statistics for Freelancer */}
+            {isFreelancer && freelancerData?.statistics && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-green-800">Total Earnings</p>
+                        <p className="text-2xl font-bold text-green-900">
+                          ₹{freelancerData.statistics.totalProjectsValue?.toLocaleString() || 0}
+                        </p>
+                      </div>
+                      <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center">
+                        <span className="text-green-700 font-bold">₹</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">Avg Project Duration</p>
+                        <p className="text-2xl font-bold text-blue-900">
+                          {freelancerData.statistics.averageProjectDuration || 0} days
+                        </p>
+                      </div>
+                  
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-purple-800">Verification Status</p>
+                        <p className="text-lg font-bold text-purple-900">
+                          {freelancerData.professionalInfo?.isVerified ? 'Verified' : 'Unverified'}
+                        </p>
+                      </div>
+                      <Award className={`w-8 h-8 ${freelancerData.professionalInfo?.isVerified ? 'text-purple-600' : 'text-gray-400'}`} />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-orange-800">Availability</p>
+                        <p className="text-lg font-bold text-orange-900">
+                          {freelancerData.professionalInfo?.availability ? 'Available' : 'Busy'}
+                        </p>
+                      </div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        freelancerData.professionalInfo?.availability ? 'bg-green-200' : 'bg-red-200'
+                      }`}>
+                        <div className={`w-4 h-4 rounded-full ${
+                          freelancerData.professionalInfo?.availability ? 'bg-green-500' : 'bg-red-500'
+                        }`}></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}{/* Bio and Skills */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-white border-gray-200">
                 <CardHeader>
@@ -502,22 +607,95 @@ const PublicProfile = () => {
                 </Card>
               )}
             </div>
-          </TabsContent>          <TabsContent value="portfolio">
-            {isFreelancer ? (
+          </TabsContent>          <TabsContent value="portfolio">            {isFreelancer ? (
               <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Portfolio Projects</CardTitle>
-                  <CardDescription>Showcase your best work</CardDescription>
+                  <CardTitle>Completed Projects</CardTitle>
+                  <CardDescription>Showcase of successfully delivered projects</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Portfolio Items Yet</h3>
-                    <p className="text-gray-600 mb-6">Add your best work to showcase your skills</p>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      Add Portfolio Item
-                    </Button>
-                  </div>
+                  {profileData?.completedProjects && profileData.completedProjects.length > 0 ? (
+                    <div className="space-y-6">
+                      {profileData.completedProjects.map((project: any) => (
+                        <div key={project.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-xl text-gray-900 mb-2">{project.title}</h4>
+                              <Badge 
+                                variant="default"
+                                className="bg-green-100 text-green-800 mb-3"
+                              >
+                                ✓ COMPLETED
+                              </Badge>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-500">Completed on</p>
+                              <p className="font-medium">
+                                {new Date(project.completedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-700 mb-4 leading-relaxed">{project.description}</p>
+                          
+                          {/* Skills */}
+                          <div className="mb-4">
+                            <h5 className="font-medium text-gray-900 mb-2">Technologies Used:</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {project.skillsRequired.map((skill: string) => (
+                                <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Project Details */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Project Budget</p>
+                              <p className="text-lg font-bold text-green-600">
+                                ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Duration</p>
+                              <p className="text-lg font-semibold text-gray-900">{project.duration}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Client Info */}
+                          <div className="border-t pt-4">
+                            <h5 className="font-medium text-gray-900 mb-3">Client Information</h5>
+                            <div className="flex items-center space-x-4">
+                              <Avatar className="w-12 h-12">
+                                <AvatarImage src={project.client.profileImage || undefined} />
+                                <AvatarFallback className="bg-blue-100 text-blue-700">
+                                  {project.client.name.split(' ').map((n: string) => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-900">{project.client.name}</p>
+                                <p className="text-blue-600">{project.client.company}</p>
+                                <div className="flex items-center text-sm text-gray-600 mt-1">
+                                  <span>{project.client.industry}</span>
+                                  <span className="mx-2">•</span>
+                                  <MapPin className="w-3 h-3 mr-1" />
+                                  <span>{project.client.location}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Completed Projects Yet</h3>
+                      <p className="text-gray-600 mb-6">Start taking on projects to build your portfolio</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -571,20 +749,97 @@ const PublicProfile = () => {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="reviews">
+          </TabsContent>          <TabsContent value="reviews">
             <Card className="bg-white border-gray-200">
               <CardHeader>
                 <CardTitle>Client Reviews</CardTitle>
                 <CardDescription>What clients say about your work</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                  <p className="text-gray-600">Complete your first project to start receiving reviews</p>
-                </div>
+                {isFreelancer && profileData?.ratingsReceived && profileData.ratingsReceived.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Rating Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-semibold mb-3">Rating Overview</h4>
+                        <div className="flex items-center mb-2">
+                          <div className="flex items-center">
+                            <Star className="w-6 h-6 text-yellow-400 fill-current" />
+                            <span className="text-2xl font-bold ml-2">
+                              {freelancerData?.statistics?.averageRating || 0}
+                            </span>
+                          </div>
+                          <span className="text-gray-500 ml-2">
+                            ({freelancerData?.statistics?.totalRatings || 0} reviews)
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {freelancerData?.statistics?.ratingDistribution && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h4 className="font-semibold mb-3">Rating Distribution</h4>
+                          <div className="space-y-1">
+                            {[5, 4, 3, 2, 1].map(rating => (
+                              <div key={rating} className="flex items-center text-sm">
+                                <span className="w-8">{rating}★</span>
+                                <div className="flex-1 mx-2 bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-yellow-400 h-2 rounded-full" 
+                                    style={{ 
+                                      width: `${((freelancerData.statistics.ratingDistribution[rating] || 0) / (freelancerData.statistics.totalRatings || 1)) * 100}%` 
+                                    }}
+                                  ></div>
+                                </div>
+                                <span className="w-8 text-right">
+                                  {freelancerData.statistics.ratingDistribution[rating] || 0}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Individual Reviews */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Recent Reviews</h4>
+                      {profileData.ratingsReceived.map((review: any) => (
+                        <div key={review.id} className="border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center">
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                  <Star
+                                    key={star}
+                                    className={`w-4 h-4 ${
+                                      star <= review.rating
+                                        ? 'text-yellow-400 fill-current'
+                                        : 'text-gray-300'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="ml-2 font-medium">{review.rating}/5</span>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h5 className="font-medium text-blue-600 mb-2">
+                            Project: {review.projectTitle}
+                          </h5>
+                          <p className="text-gray-700">{review.review}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
+                    <p className="text-gray-600">Complete your first project to start receiving reviews</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

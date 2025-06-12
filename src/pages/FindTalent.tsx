@@ -30,21 +30,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import MobileNav from "@/components/MobileNav";
 import FreelancerContactModal from "@/components/FreelancerContactModal";
-import { publicService } from "@/lib/api/client";
-import { PublicFreelancer } from "@/lib/api/types";
+import { clientService } from "@/lib/api/client";
+import { ClientFreelancer } from "@/lib/api/types";
 import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
 import { logout, isLoggedIn, RoleStorage } from "@/lib/config/api";
 import { useNavigate } from "react-router-dom";
 
 const FindTalent = () => {
-  const [selectedFreelancer, setSelectedFreelancer] = useState<PublicFreelancer | null>(null);
+  const [selectedFreelancer, setSelectedFreelancer] = useState<ClientFreelancer | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   // API state
-  const [freelancers, setFreelancers] = useState<PublicFreelancer[]>([]);
+  const [freelancers, setFreelancers] = useState<ClientFreelancer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);  const [pagination, setPagination] = useState({
     page: 1,
@@ -61,10 +61,10 @@ const FindTalent = () => {
     email: string;
     profileImage?: string;
   } | null>(null);
-  
-  // Search and filters state
+    // Search and filters state
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [sortBy, setSortBy] = useState("relevance");
   const [filters, setFilters] = useState({
     skills: [] as string[],
     location: "",
@@ -112,15 +112,13 @@ const FindTalent = () => {
     if (searchParam) {
       setSearchQuery(searchParam);
     }
-  }, [searchParams]);
-
-  // Fetch freelancers
+  }, [searchParams]);  // Fetch freelancers
   const fetchFreelancers = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const response = await publicService.getFreelancers({
+      const response = await clientService.getFreelancers({
         page: pagination.page,
         limit: pagination.limit,
         query: debouncedQuery,
@@ -133,7 +131,32 @@ const FindTalent = () => {
       });
 
       if (response.success) {
-        setFreelancers(response.data.freelancers);
+        let sortedFreelancers = [...response.data.freelancers];
+        
+        // Apply sorting
+        switch (sortBy) {
+          case 'rating-high':
+            sortedFreelancers.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
+            break;
+          case 'rating-low':
+            sortedFreelancers.sort((a, b) => (a.ratings || 0) - (b.ratings || 0));
+            break;
+          case 'rate-high':
+            sortedFreelancers.sort((a, b) => (b.hourlyRate || 0) - (a.hourlyRate || 0));
+            break;
+          case 'rate-low':
+            sortedFreelancers.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+            break;
+          case 'recent':
+            sortedFreelancers.sort((a, b) => new Date(b.user.createdAt).getTime() - new Date(a.user.createdAt).getTime());
+            break;
+          case 'relevance':
+          default:
+            // Keep original order for relevance
+            break;
+        }
+        
+        setFreelancers(sortedFreelancers);
         setPagination(response.data.pagination);
       } else {
         throw new Error('Failed to fetch freelancers');
@@ -150,17 +173,16 @@ const FindTalent = () => {
       setIsLoading(false);
     }
   };
-
   // Effects
   useEffect(() => {
     fetchFreelancers();
-  }, [debouncedQuery, filters, pagination.page]);
+  }, [debouncedQuery, filters, pagination.page, sortBy]);
 
   useEffect(() => {
     if (pagination.page !== 1) {
       setPagination(prev => ({ ...prev, page: 1 }));
     }
-  }, [debouncedQuery, filters]);
+  }, [debouncedQuery, filters, sortBy]);
 
   // Utility functions
   const formatTimeAgo = (dateString: string) => {
@@ -262,8 +284,7 @@ const FindTalent = () => {
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Connect with skilled freelancers who can bring your projects to life
           </p>
-          
-          {/* Search Section */}
+            {/* Search Section */}
           <div className="max-w-3xl mx-auto">
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <div className="flex-1 relative">
@@ -275,19 +296,6 @@ const FindTalent = () => {
                   className="pl-12 h-14 text-lg bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-300 focus:ring-blue-200"
                 />
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowFilters(!showFilters)}
-                className="h-14 px-6 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-blue-50 transition-all duration-200"
-              >
-                <Filter className="h-5 w-5 mr-2" />
-                Filters
-                {activeFiltersCount > 0 && (
-                  <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 flex items-center justify-center">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
             </div>
 
             {/* Active Filters */}
@@ -453,28 +461,44 @@ const FindTalent = () => {
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Results Header */}
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {isLoading ? "Searching..." : `${pagination.total} talented freelancers`}
-                </h2>
-                {debouncedQuery && (
-                  <p className="text-sm text-gray-600">
-                    Results for "{debouncedQuery}"
-                  </p>
-                )}
+            {/* Results Header */}            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {isLoading ? "Searching..." : `${pagination.total} talented freelancers`}
+                  </h2>
+                  {debouncedQuery && (
+                    <p className="text-sm text-gray-600">
+                      Results for "{debouncedQuery}"
+                    </p>
+                  )}
+                </div>
+                
+                {/* <Button 
+                  variant="outline" 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-blue-50 transition-all duration-200"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 h-4 w-4 p-0 flex items-center justify-center text-xs">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button> */}
               </div>
               
-              <Select defaultValue="relevance">
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48 bg-white/80 backdrop-blur-sm">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="relevance">Most Relevant</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="rate-low">Lowest Rate</SelectItem>
+                  <SelectItem value="rating-high">Highest Rated</SelectItem>
+                  <SelectItem value="rating-low">Lowest Rated</SelectItem>
                   <SelectItem value="rate-high">Highest Rate</SelectItem>
+                  <SelectItem value="rate-low">Lowest Rate</SelectItem>
                   <SelectItem value="recent">Most Recent</SelectItem>
                 </SelectContent>
               </Select>
@@ -523,12 +547,11 @@ const FindTalent = () => {
                     <Card key={freelancer.id} className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-gray-200 group">
                       <CardContent className="p-6">
                         <div className="flex items-start space-x-6">
-                          {/* Avatar */}
-                          <div className="flex-shrink-0">
+                          {/* Avatar */}                          <div className="flex-shrink-0">
                             <Avatar className="w-20 h-20 ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all">
-                              <AvatarImage src={freelancer.profile.profileImage || undefined} />
+                              <AvatarImage src={freelancer.user.profileImage || undefined} />
                               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl">
-                                {freelancer.profile.name?.charAt(0)?.toUpperCase() || 'U'}
+                                {freelancer.user.name?.charAt(0)?.toUpperCase() || 'U'}
                               </AvatarFallback>
                             </Avatar>
                           </div>
@@ -538,7 +561,7 @@ const FindTalent = () => {
                             <div className="flex items-start justify-between mb-3">
                               <div>
                                 <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                  {freelancer.profile.name || 'Anonymous User'}
+                                  {freelancer.user.name || 'Anonymous User'}
                                 </h3>
                                 <p className="text-blue-600 font-medium">
                                   {freelancer.experience ? `${freelancer.experience} Experience` : 'Experience not specified'}
@@ -563,11 +586,12 @@ const FindTalent = () => {
                               </div>
                             </div>
                             
-                            {/* Stats Row */}
-                            <div className="flex items-center text-sm text-gray-600 mb-4 space-x-4">
+                            {/* Stats Row */}                            <div className="flex items-center text-sm text-gray-600 mb-4 space-x-4">
                               <div className="flex items-center">
                                 <MapPin className="h-4 w-4 mr-1 text-blue-500" />
-                                {freelancer.profile.location || 'Location not specified'}
+                                <span className="truncate max-w-[150px]">
+                                  {freelancer.user.location || 'Location not specified'}
+                                </span>
                               </div>
                               <div className="flex items-center">
                                 <Briefcase className="h-4 w-4 mr-1 text-green-500" />
@@ -575,13 +599,13 @@ const FindTalent = () => {
                               </div>
                               <div className="flex items-center">
                                 <Clock className="h-4 w-4 mr-1 text-purple-500" />
-                                Member since {formatTimeAgo(freelancer.profile.memberSince)}
+                                Member since {formatTimeAgo(freelancer.user.createdAt)}
                               </div>
                             </div>
                             
                             {/* Bio */}
                             <p className="text-gray-700 mb-4 line-clamp-2 leading-relaxed">
-                              {freelancer.profile.bio || 'Professional freelancer ready to help with your project needs.'}
+                              {freelancer.user.bio || 'Professional freelancer ready to help with your project needs.'}
                             </p>
                             
                             {/* Skills */}
@@ -611,14 +635,13 @@ const FindTalent = () => {
                                 >
                                   <Mail className="h-4 w-4 mr-2" />
                                   Contact
-                                </Button>
-                                <Button 
+                                </Button>                                <Button 
                                   variant="outline" 
                                   asChild
                                   className="hover:bg-blue-50 hover:border-blue-200"
                                 >
                                   <Link 
-                                    to={generatePublicProfileUrl(freelancer.profile.name || 'Anonymous User', freelancer.id)}
+                                    to={generatePublicProfileUrl(freelancer.user.name || 'Anonymous User', freelancer.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -691,21 +714,20 @@ const FindTalent = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Contact Modal */}
+      </div>      {/* Contact Modal */}
       {selectedFreelancer && (
         <FreelancerContactModal
           freelancer={{
             id: selectedFreelancer.id,
-            name: selectedFreelancer.profile.name || 'Anonymous User',
+            name: selectedFreelancer.user.name || 'Anonymous User',
             title: selectedFreelancer.experience ? `${selectedFreelancer.experience} Experience` : 'Experience not specified',
             skills: selectedFreelancer.skills,
             rate: selectedFreelancer.hourlyRate ? `₹${selectedFreelancer.hourlyRate}/hr` : 'Rate not set',
             rating: selectedFreelancer.ratings || 0,
             reviews: selectedFreelancer.projectsCompleted,
-            location: selectedFreelancer.profile.location || 'Location not specified',
-            bio: selectedFreelancer.profile.bio || 'No bio available.'
+            location: selectedFreelancer.user.location || 'Location not specified',
+            bio: selectedFreelancer.user.bio || 'No bio available.',
+            email: selectedFreelancer.user.email
           }}
           isOpen={!!selectedFreelancer}
           onClose={() => setSelectedFreelancer(null)}

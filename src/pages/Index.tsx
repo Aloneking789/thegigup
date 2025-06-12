@@ -393,12 +393,10 @@ const Index = () => {
                     <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full animate-pulse"></div>
                     <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3 mx-auto"></div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                  </CardHeader>                  <CardContent className="space-y-4">
                     <div className="flex flex-wrap gap-1">
-                      {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
-                      ))}
+                      <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-6 w-12 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                     <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                     <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
@@ -432,17 +430,16 @@ const Index = () => {
                         ? `${freelancer.profile.bio.substring(0, 20)}...` 
                         : freelancer.profile.bio || 'No bio available'}
                     </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                  </CardHeader>                  <CardContent className="space-y-4">
                     <div className="flex flex-wrap gap-1">
-                      {freelancer.skills.slice(0, 3).map((skill) => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
-                          {skill}
+                      {freelancer.skills.length > 0 && (
+                        <Badge key={freelancer.skills[0]} variant="secondary" className="text-xs">
+                          {freelancer.skills[0]}
                         </Badge>
-                      ))}
-                      {freelancer.skills.length > 3 && (
+                      )}
+                      {freelancer.skills.length > 1 && (
                         <Badge variant="outline" className="text-xs">
-                          +{freelancer.skills.length - 3} more
+                          +{freelancer.skills.length - 1} more
                         </Badge>
                       )}
                     </div>
@@ -456,9 +453,11 @@ const Index = () => {
                     </div>
 
                     <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {freelancer.profile.location || "Remote"}
-                    </div>                    <div className="text-center pt-2">
+                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                      <span className="truncate">
+                        {freelancer.profile.location || "Remote"}
+                      </span>
+                    </div><div className="text-center pt-2">
                       <div className="text-lg font-bold text-blue-600">₹{freelancer.hourlyRate}/hr</div>
                       <Link to={generatePublicProfileUrl(freelancer.profile.name, freelancer.id)}>
                         <Button size="sm" className="w-full mt-2 bg-blue-600 hover:bg-blue-700">
@@ -656,7 +655,7 @@ const Index = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-blue-600 h-14 px-8 text-lg font-semibold"
+                    className="border-white text-blue-600 hover:bg-white hover:text-blue-600 h-14 px-8 text-lg font-semibold"
                     onClick={() => navigate("/signup?type=freelancer")}
                   >
                     Find Work
@@ -666,9 +665,7 @@ const Index = () => {
             )}
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
+      </section>      {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -680,86 +677,222 @@ const Index = () => {
                 <span className="text-xl font-bold">TheGigUp</span>
               </div>
               <p className="text-gray-400">Connecting talented freelancers with amazing projects worldwide.</p>
+              {userLoggedIn && (
+                <div className="text-sm text-blue-400">
+                  Welcome back, {userProfile?.name?.split(' ')[0] || 'User'}!
+                </div>
+              )}
             </div>
 
-            <div>
-              <h3 className="font-semibold mb-4">For Clients</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    How to Hire
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Talent Marketplace
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Project Catalog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Enterprise
-                  </a>
-                </li>
-              </ul>
-            </div>
+            {/* Dynamic Content Based on User Role */}
+            {userLoggedIn && userRole === 'CLIENT' ? (
+              // Client-specific sections
+              <>
+                <div>
+                  <h3 className="font-semibold mb-4">Client Dashboard</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/client-dashboard" className="hover:text-white transition-colors">
+                        My Dashboard
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/find-talent" className="hover:text-white transition-colors">
+                        Find Talent
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/post-job" className="hover:text-white transition-colors">
+                        Post a Job
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/profile" className="hover:text-white transition-colors">
+                        My Profile
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+{/* 
+                <div>
+                  <h3 className="font-semibold mb-4">Resources</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/about" className="hover:text-white transition-colors">
+                        About TheGigUp
+                      </Link>
+                    </li>
+                    <li>
+                      <a href="#" className="hover:text-white transition-colors">
+                        How to Hire
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="hover:text-white transition-colors">
+                        Project Management
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" className="hover:text-white transition-colors">
+                        Payment Protection
+                      </a>
+                    </li>
+                  </ul>
+                </div> */}
+              </>
+            ) : userLoggedIn && userRole === 'FREELANCER' ? (
+              // Freelancer-specific sections
+              <>
+                <div>
+                  <h3 className="font-semibold mb-4">Freelancer Dashboard</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/freelancer-dashboard" className="hover:text-white transition-colors">
+                        My Dashboard
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/find-work" className="hover:text-white transition-colors">
+                        Find Work
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/profile" className="hover:text-white transition-colors">
+                        My Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <a href="#" className="hover:text-white transition-colors">
+                        My Proposals
+                      </a>
+                    </li>
+                  </ul>
+                </div>
 
-            <div>
-              <h3 className="font-semibold mb-4">For Freelancers</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    How to Find Work
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Direct Contracts
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Find Freelance Jobs
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Resources
-                  </a>
-                </li>
-              </ul>
-            </div>
+                <div>
+                  <h3 className="font-semibold mb-4">Resources</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/about" className="hover:text-white transition-colors">
+                        About TheGigUp
+                      </Link>
+                    </li>                    <li>
+                      <Link to="/how-to-find-work" className="hover:text-white transition-colors">
+                        How to Find Work
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/skill-development" className="hover:text-white transition-colors">
+                        Skill Development
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/success-stories" className="hover:text-white transition-colors">
+                        Success Stories
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              // Guest user sections - show both client and freelancer options
+              <>
+                <div>
+                  <h3 className="font-semibold mb-4">For Clients</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/signup?type=client" className="hover:text-white transition-colors">
+                        Join as Client
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/find-talent" className="hover:text-white transition-colors">
+                        Browse Talent
+                      </Link>
+                    </li>
+                    <li>                      <Link to="/about" className="hover:text-white transition-colors">
+                        How to Hire
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/contact-support" className="hover:text-white transition-colors">
+                        Enterprise Solutions
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4">For Freelancers</h3>
+                  <ul className="space-y-2 text-gray-400">
+                    <li>
+                      <Link to="/signup?type=freelancer" className="hover:text-white transition-colors">
+                        Join as Freelancer
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/find-work" className="hover:text-white transition-colors">
+                        Browse Jobs
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/get-started" className="hover:text-white transition-colors">
+                        How to Get Started
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/success-tips" className="hover:text-white transition-colors">
+                        Success Tips
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </>
+            )}
 
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link to="/about" className="hover:text-white transition-colors">
                     About Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Leadership
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link to="/careers" className="hover:text-white transition-colors">
                     Careers
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Contact
-                  </a>
+                  <Link to="/press" className="hover:text-white transition-colors">
+                    Press & News
+                  </Link>
                 </li>
+                <li>
+                  <Link to="/contact-support" className="hover:text-white transition-colors">
+                    Contact Support
+                  </Link>
+                </li>
+                {userLoggedIn && (
+                  <li>
+                    <button 
+                      onClick={handleLogout}
+                      className="hover:text-white transition-colors text-left"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                )}
+                {!userLoggedIn && (
+                  <li>
+                    <Link to="/login" className="hover:text-white transition-colors">
+                      Sign In
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
-          </div>          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+          </div><div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
             <p>&copy; 2024 TheGigUp. All rights reserved.</p>
           </div>
         </div>

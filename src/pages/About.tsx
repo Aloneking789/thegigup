@@ -200,7 +200,7 @@ const About = () => {
               <Users className="w-5 h-5 mr-2" />
               Find Talent
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+            <Button size="lg" variant="outline" className="border-white text-blue-600 hover:bg-white hover:text-blue-600">
               <Briefcase className="w-5 h-5 mr-2" />
               Find Work
             </Button>

@@ -404,11 +404,11 @@ const FreelancerDashboard = () => {
             </div>            
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-3 sm:space-x-4">
-              <Button variant="outline" size="sm" className="text-sm">
+              {/* <Button variant="outline" size="sm" className="text-sm">
                 <MessageSquare className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden lg:inline">Messages</span>
                 <span className="lg:hidden">Msgs</span>
-              </Button>
+              </Button> */}
  
               {isLoggedIn() && (
                 <Button variant="outline" size="sm" onClick={handleLogout} className="text-sm">
@@ -534,10 +534,10 @@ const FreelancerDashboard = () => {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" className="border-gray-200 flex-1 sm:flex-none h-10 text-sm">
+                    {/* <Button variant="outline" className="border-gray-200 flex-1 sm:flex-none h-10 text-sm">
                       <Filter className="w-4 h-4 mr-1 sm:mr-2" />
                       <span className="hidden sm:inline">Filter</span>
-                    </Button>
+                    </Button> */}
                     <Button variant="outline" className="border-gray-200 flex-1 sm:flex-none h-10 text-sm">
                       <span className="hidden sm:inline">Sort by: Latest</span>
                       <span className="sm:hidden">Sort</span>

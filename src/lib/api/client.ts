@@ -6,6 +6,7 @@ import {
   CreateProjectRequest,
   ApiResponse,
   PublicFreelancer,
+  ClientFreelancer,
   PublicJob,
   ClientProfileResponse,
   FreelancerProfileResponse,
@@ -222,7 +223,6 @@ export class ClientService {
 
     return response.json();
   }
-
   // Get Client Profile
   async getProfile(): Promise<ApiResponse<ClientProfileResponse>> {
     const response = await fetch(getApiUrl('/client/profile'), {
@@ -232,6 +232,51 @@ export class ClientService {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch client profile: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+  // Get Freelancers for Client (with email access)
+  async getFreelancers(params?: {
+    page?: number;
+    limit?: number;
+    skills?: string[];
+    location?: string;
+    minRating?: number;
+    maxRate?: number;
+    experienceLevel?: string;
+    availability?: string;
+    query?: string;
+  }): Promise<ApiResponse<{
+    freelancers: ClientFreelancer[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  }>> {
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.skills && params.skills.length > 0) searchParams.append('skills', params.skills.join(','));
+    if (params?.location) searchParams.append('location', params.location);
+    if (params?.minRating) searchParams.append('minRating', params.minRating.toString());
+    if (params?.maxRate) searchParams.append('maxRate', params.maxRate.toString());
+    if (params?.experienceLevel) searchParams.append('experienceLevel', params.experienceLevel);
+    if (params?.availability) searchParams.append('availability', params.availability);
+    if (params?.query) searchParams.append('query', params.query);
+
+    const url = getApiUrl(`/client/freelancers${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch freelancers: ${response.statusText}`);
     }
 
     return response.json();
@@ -415,6 +460,67 @@ export class FreelancerService {
     return {
       ...(token && { 'Authorization': `Bearer ${token}` }),
     };
+  }
+  // Get Freelancer Dashboard
+  async getDashboard(): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl('/freelancer/dashboard'), {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch freelancer dashboard: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: data,
+          message: 'Dashboard data fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching freelancer dashboard:', error);
+      throw error;
+    }
+  }
+
+  // Get Freelancer Ratings
+  async getRatings(): Promise<{ success: boolean; data: any; message: string }> {
+    try {
+      const response = await fetch(getApiUrl('/freelancer/ratings'), {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch freelancer ratings: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure consistent response format
+      if (data.success !== undefined) {
+        return data;
+      } else {
+        return {
+          success: true,
+          data: data,
+          message: 'Ratings fetched successfully'
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching freelancer ratings:', error);
+      throw error;
+    }
   }
 
   // Get Freelancer Profile
