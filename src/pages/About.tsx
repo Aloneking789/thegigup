@@ -14,6 +14,7 @@ import { logout, isLoggedIn } from "@/lib/config/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import MobileNav from "@/components/MobileNav";
+import Footer from "@/components/Footer";
 
 const About = () => {
   const location = useLocation();
@@ -196,17 +197,19 @@ const About = () => {
             Join millions of freelancers and clients who trust TheGigUp for their projects
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+            {/* <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
               <Users className="w-5 h-5 mr-2" />
               Find Talent
             </Button>
             <Button size="lg" variant="outline" className="border-white text-blue-600 hover:bg-white hover:text-blue-600">
               <Briefcase className="w-5 h-5 mr-2" />
-              Find Work
-            </Button>
+              Find Work            </Button> */}
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

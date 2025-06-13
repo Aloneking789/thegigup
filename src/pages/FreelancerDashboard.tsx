@@ -457,7 +457,7 @@ const FreelancerDashboard = () => {
               </div>
               <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900">
                 <span className="hidden sm:inline">TheGigUp</span>
-                <span className="sm:hidden">TG</span>
+                <span className="sm:hidden">TheGigUp</span>
               </Link>
             </div>            
             {/* Desktop Navigation */}

@@ -4,6 +4,7 @@ import { Briefcase, Newspaper, Calendar, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MobileNav from "@/components/MobileNav";
+import Footer from "@/components/Footer";
 
 const Press = () => {
   const pressReleases = [
@@ -68,9 +69,9 @@ const Press = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{release.title}</h3>
                   <p className="text-gray-600 mb-3">{release.summary}</p>
-                  <Link to="#" className="text-blue-600 hover:text-blue-800 flex items-center">
+                  {/* <Link to="#" className="text-blue-600 hover:text-blue-800 flex items-center">
                     Read full article <ExternalLink className="w-4 h-4 ml-1" />
-                  </Link>
+                  </Link> */}
                 </CardContent>
               </Card>
             ))}
@@ -92,94 +93,10 @@ const Press = () => {
         </div>
       </div>
 
-      {/* Footer (Common) */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">TheGigUp</span>
-              </div>
-              <p className="text-gray-400">Connecting talented freelancers with amazing projects worldwide.</p>
-            </div>
+      {/* Footer */}
+      <Footer />
 
-            <div>
-              <h3 className="font-semibold mb-4">For Clients</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link to="/signup?type=client" className="hover:text-white transition-colors">
-                    Join as Client
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/find-talent" className="hover:text-white transition-colors">
-                    Browse Talent
-                  </Link>
-                </li>
-              </ul>
-            </div>
 
-            <div>
-              <h3 className="font-semibold mb-4">For Freelancers</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link to="/signup?type=freelancer" className="hover:text-white transition-colors">
-                    Join as Freelancer
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/find-work" className="hover:text-white transition-colors">
-                    Browse Jobs
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link to="/about" className="hover:text-white transition-colors">
-                    About TheGigUp
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/how-to-find-work" className="hover:text-white transition-colors">
-                    How to Find Work
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/skill-development" className="hover:text-white transition-colors">
-                    Skill Development
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/success-stories" className="hover:text-white transition-colors">
-                    Success Stories
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/press" className="hover:text-white transition-colors">
-                    Press & News
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact-support" className="hover:text-white transition-colors">
-                    Contact Support
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 TheGigUp. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
