@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,9 @@ import Press from "./pages/Press";
 import ContactSupport from "./pages/ContactSupport";
 import GetStarted from "./pages/GetStarted";
 import SuccessTips from "./pages/SuccessTips";
+import ForgotPassword from '@/pages/ForgotPassword';
+import Terms from "./pages/Terms";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,7 @@ const App = () => (
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/client-signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/freelancer-signup" element={<PublicRoute><Signup /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
           {/* Public profile route - accessible to everyone */}
           <Route path="/profile/:nameSlug/:userId" element={<PublicProfile />} />
@@ -74,6 +77,10 @@ const App = () => (
           
           {/* Freelancer-specific routes */}
           <Route path="/find-work" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FindWork /></ProtectedRoute>} />
+          
+          {/* Terms and Privacy routes */}
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

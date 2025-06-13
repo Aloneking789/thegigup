@@ -1,9 +1,15 @@
 // API Configuration
 export const API_CONFIG = {
   BASE_URL: 'https://freelancer-zfoo.onrender.com/api/v1',
-  ENDPOINTS: {    CLIENT: {
-      SIGNUP: '/client/signup',
+  ENDPOINTS: {   
+        EMAIL: {
+      SEND_VERIFICATION_OTP: '/email/send-verification-otp',
+      VERIFY_OTP: '/email/verify-otp'
+    }, CLIENT: {
       LOGIN: '/client/login',
+      SIGNUP: '/client/signup',
+      FORGOT_PASSWORD: '/client/forgot-password',
+      VERIFY_OTP: '/client/verify-otp',
       PROFILE: '/client/profile',
       PROJECTS: '/client/projects',
       DASHBOARD: '/client/dashboard',
@@ -11,6 +17,8 @@ export const API_CONFIG = {
     },FREELANCER: {
       SIGNUP: '/freelancer/signup',
       LOGIN: '/freelancer/login',
+        FORGOT_PASSWORD: '/freelancer/forgot-password',
+      VERIFY_OTP: '/freelancer/verify-otp',
       PROFILE: '/freelancer/profile',
       APPLY_PROJECT: '/freelancer/projects',
       ASSIGNED_PROJECTS: '/freelancer/projects',
