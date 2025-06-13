@@ -52,9 +52,7 @@ const Signup = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
       // Determine the API endpoint based on role
       const endpoint = formData.role === "client" 
         ? API_CONFIG.ENDPOINTS.CLIENT.SIGNUP 
@@ -77,7 +75,14 @@ const Signup = () => {
         body: JSON.stringify(signupData),
       });
 
-      const data = await response.json();
+      // Parse response data, handle JSON parsing errors gracefully
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse response JSON:', jsonError);
+        throw new Error('Invalid server response');
+      }
 
       if (response.ok) {
         // Store token and role in localStorage
@@ -96,19 +101,62 @@ const Signup = () => {
           navigate("/freelancer-profile-setup");
         }
       } else {
+        // Enhanced error handling for email already exists scenarios
+        let errorMessage = data.message || "An error occurred during signup";
+        
+        // Check for email already exists scenarios based on status code and message
+        if (response.status === 409 || response.status === 400) {
+          // HTTP 409 Conflict or 400 Bad Request usually indicates duplicate resource
+          if (data.message && (
+            data.message.toLowerCase().includes('email already exists') ||
+            data.message.toLowerCase().includes('user already exists') ||
+            data.message.toLowerCase().includes('already registered')
+          )) {
+            if (formData.role === "client") {
+              errorMessage = "Email address already exists as a freelancer. Can't use same email for a client account.";
+            } else {
+              errorMessage = "Email address already exists as a client. Can't use same email for a freelancer account.";
+            }
+          } else {
+            errorMessage = data.message || "This email is already registered. Please try a different email.";
+          }
+        } else if (response.status === 422) {
+          // Unprocessable Entity - validation errors
+          errorMessage = data.message || "Please check your input and try again.";
+        } else {
+          // Other errors
+          errorMessage = data.message || "Signup failed. Please try again.";
+        }
+
         toast({
           title: "Signup failed",
-          description: data.message || "An error occurred during signup",
+          description: errorMessage,
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Signup error:', error);
-      toast({
-        title: "Network error",
-        description: "Unable to connect to the server. Please try again.",
-        variant: "destructive"
-      });
+      
+      // More specific error handling
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast({
+          title: "Network error",
+          description: "Unable to connect to the server. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+      } else if (error instanceof Error && error.message === 'Invalid server response') {
+        toast({
+          title: "Server error",
+          description: "The server returned an invalid response. Please try again later.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Signup error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsLoading(false);
     }

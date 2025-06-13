@@ -24,7 +24,7 @@ import HowToFindWork from "./pages/HowToFindWork";
 import SkillDevelopment from "./pages/SkillDevelopment";
 import SuccessStories from "./pages/SuccessStories";
 import NotFound from "./pages/NotFound";
-import Careers from "./pages/Careers";
+// import Careers from "./pages/Careers";
 import Press from "./pages/Press";
 import ContactSupport from "./pages/ContactSupport";
 import GetStarted from "./pages/GetStarted";
@@ -42,7 +42,7 @@ const App = () => (
           <Route path="/about" element={<About />} />          <Route path="/how-to-find-work" element={<HowToFindWork />} />
           <Route path="/skill-development" element={<SkillDevelopment />} />
           <Route path="/success-stories" element={<SuccessStories />} />
-          <Route path="/careers" element={<Careers />} />
+          {/* <Route path="/careers" element={<Careers />} /> */}
           <Route path="/press" element={<Press />} />
           <Route path="/contact-support" element={<ContactSupport />} />
           <Route path="/get-started" element={<GetStarted />} />

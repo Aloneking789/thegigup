@@ -206,7 +206,6 @@ export class ClientService {
 
     return response.json();
   }
-
   // Get Client Applications
   async getApplications(page: number = 1, limit: number = 10): Promise<ClientApplicationsResponse> {
     const response = await fetch(
@@ -219,6 +218,64 @@ export class ClientService {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch applications: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Meeting Scheduling Methods
+  async scheduleInterview(applicationId: string, meetingData: {
+    googleMeetLink: string;
+    meetingDate: string;
+    meetingTime: string;
+    timezone?: string;
+    meetingTitle?: string;
+    meetingDescription?: string;
+    duration?: number;
+    meetingType?: string;
+  }): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      getApiUrl(`/client/applications/${applicationId}/meetings`),
+      {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(meetingData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to schedule interview: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+  async getApplicationMeetings(applicationId: string): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      getApiUrl(`/client/applications/${applicationId}/meetings`),
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch application meetings: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getAllMeetings(page: number = 1, limit: number = 10): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      getApiUrl(`/client/meetings?page=${page}&limit=${limit}`),
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch all meetings: ${response.statusText}`);
     }
 
     return response.json();
@@ -760,7 +817,6 @@ export class FreelancerService {
       throw error;
     }
   }
-
   // Request Project Completion
   async requestCompletion(projectId: string): Promise<ApiResponse<{ message: string }>> {
     const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.FREELANCER.REQUEST_COMPLETION}/${projectId}/request-completion`), {
@@ -770,6 +826,39 @@ export class FreelancerService {
 
     if (!response.ok) {
       throw new Error(`Failed to request completion: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Meeting Methods for Freelancer
+  async getApplicationMeetings(applicationId: string): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      getApiUrl(`/freelancer/applications/${applicationId}/meetings`),
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch application meetings: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getAllMeetings(page: number = 1, limit: number = 10): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      getApiUrl(`/freelancer/meetings?page=${page}&limit=${limit}`),
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch meetings: ${response.statusText}`);
     }
 
     return response.json();

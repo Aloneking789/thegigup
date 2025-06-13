@@ -41,9 +41,7 @@ const Login = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
       // Determine the API endpoint based on role
       const endpoint = formData.role === "client" 
         ? API_CONFIG.ENDPOINTS.CLIENT.LOGIN 
@@ -65,15 +63,20 @@ const Login = () => {
         body: JSON.stringify(loginData),
       });
 
-      const data = await response.json();
-      console.log(data.data.token);
+      // Parse response data, handle JSON parsing errors gracefully
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse response JSON:', jsonError);
+        throw new Error('Invalid server response');
+      }
 
       if (response.ok) {
         // Store token and role in localStorage
         const role = formData.role.toUpperCase() as 'CLIENT' | 'FREELANCER';
         
         setTokenByRole(role, data.data.token);
-
 
         toast({
           title: "Welcome back!",
@@ -87,19 +90,71 @@ const Login = () => {
           navigate("/freelancer-dashboard");
         }
       } else {
+        // Enhanced error handling for role mismatch and other cases
+        let errorMessage = data.message || "Invalid email or password";
+        
+        // Check for specific error scenarios based on status code and message
+        if (response.status === 404) {
+          // User not found in the selected role
+          if (formData.role === "client") {
+            errorMessage = "You are signed up as a freelancer. Please signup first as a client to login.";
+          } else {
+            errorMessage = "You are signed up as a client. Please signup first as a freelancer to login.";
+          }
+        } else if (response.status === 400) {
+          // Bad request - could be wrong role or invalid credentials
+          if (data.message && data.message.toLowerCase().includes('user not found')) {
+            if (formData.role === "client") {
+              errorMessage = "You are signed up as a freelancer. Please signup first as a client to login.";
+            } else {
+              errorMessage = "You are signed up as a client. Please signup first as a freelancer to login.";
+            }
+          } else if (data.message && data.message.toLowerCase().includes('role')) {
+            if (formData.role === "client") {
+              errorMessage = "You are signed up as a freelancer. Please signup first as a client to login.";
+            } else {
+              errorMessage = "You are signed up as a client. Please signup first as a freelancer to login.";
+            }
+          } else {
+            errorMessage = data.message || "Invalid email or password";
+          }
+        } else if (response.status === 401) {
+          // Unauthorized - wrong password
+          errorMessage = "Invalid email or password. Please check your credentials.";
+        } else {
+          // Other errors
+          errorMessage = data.message || "Login failed. Please try again.";
+        }
+
         toast({
           title: "Login failed",
-          description: data.message || "Invalid email or password",
+          description: errorMessage,
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: "Network error",
-        description: "Unable to connect to the server. Please try again.",
-        variant: "destructive"
-      });
+      
+      // More specific error handling
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast({
+          title: "Network error",
+          description: "Unable to connect to the server. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+      } else if (error instanceof Error && error.message === 'Invalid server response') {
+        toast({
+          title: "Server error",
+          description: "The server returned an invalid response. Please try again later.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Login error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsLoading(false);
     }

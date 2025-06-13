@@ -255,7 +255,7 @@ const Profile = () => {
                     <MapPin className="w-4 h-4 mr-2" />
                     {profileData.location || 'Location not specified'}
                   </div>
-                </div>                  <div className="flex justify-between items-center">
+                </div>                  <div className="flex justify-between items-center gap-2 ">
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => navigate('/edit-profile')}
@@ -273,7 +273,7 @@ const Profile = () => {
                     className="border-blue-200 text-blue-600 hover:bg-blue-50"
                   >
                     <User className="w-4 h-4 mr-2" />
-                    View Public Profile
+                    Public Profile
                   </Button>
                 </div>
               </div>
@@ -286,7 +286,7 @@ const Profile = () => {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            {/* <TabsTrigger value="settings">Settings</TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -204,11 +204,7 @@ const SuccessTips = () => {
                     Success Stories
                   </Link>
                 </li>
-                <li>
-                  <Link to="/careers" className="hover:text-white transition-colors">
-                    Careers
-                  </Link>
-                </li>
+
                 <li>
                   <Link to="/press" className="hover:text-white transition-colors">
                     Press & News

@@ -21,7 +21,8 @@ import {
   Award,
   ExternalLink,
   Mail,
-  MapPin
+  MapPin,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,8 @@ import {
 } from "@/lib/api/types";
 import RatingModal from "@/components/RatingModal";
 import MobileNav from "@/components/MobileNav";
+import ScheduleInterviewModal from "@/components/ScheduleInterviewModal";
+import MeetingCountdown from "@/components/MeetingCountdown";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -59,8 +62,7 @@ const ClientDashboard = () => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
   const [isApplicationsLoading, setIsApplicationsLoading] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
-  const [ratingModal, setRatingModal] = useState<{
+  const [isActionLoading, setIsActionLoading] = useState<string | null>(null);  const [ratingModal, setRatingModal] = useState<{
     isOpen: boolean;
     projectId: string;
     projectTitle: string;
@@ -69,6 +71,18 @@ const ClientDashboard = () => {
     projectId: "",
     projectTitle: ""
   });
+    // Interview scheduling state
+  const [scheduleModal, setScheduleModal] = useState<{
+    isOpen: boolean;
+    applicant: ClientProjectApplication | null;
+  }>({
+    isOpen: false,
+    applicant: null
+  });
+  const [applicationMeetings, setApplicationMeetings] = useState<Record<string, any[]>>({});
+  const [isSchedulingInterview, setIsSchedulingInterview] = useState(false);
+  const [allMeetings, setAllMeetings] = useState<any[]>([]);
+  const [isMeetingsLoading, setIsMeetingsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   // Check if user is a client, redirect if not
@@ -353,7 +367,6 @@ const ClientDashboard = () => {
     setSelectedApplicant(null);
     setIsApplicantModalOpen(false);
   };
-
   // Handle message freelancer
   const handleMessageFreelancer = (freelancerEmail: string, freelancerName: string, projectTitle: string) => {
     const subject = encodeURIComponent(`Project Inquiry: ${projectTitle}`);
@@ -369,6 +382,101 @@ ${profile?.name || 'Client'}`);
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(freelancerEmail)}&su=${subject}&body=${body}`;
     window.open(gmailUrl, '_blank');
   };
+
+  // Interview Scheduling Functions
+  const handleOpenScheduleModal = (applicant: ClientProjectApplication) => {
+    setScheduleModal({
+      isOpen: true,
+      applicant: applicant
+    });
+  };
+
+  const handleCloseScheduleModal = () => {
+    setScheduleModal({
+      isOpen: false,
+      applicant: null
+    });
+  };
+  const handleScheduleInterview = async (meetingData: any) => {
+    if (!scheduleModal.applicant) return;
+
+    try {
+      setIsSchedulingInterview(true);
+      const response = await clientService.scheduleInterview(scheduleModal.applicant.id, meetingData);
+      
+      if (response.success) {
+        toast({
+          title: "Interview Scheduled Successfully",
+          description: `Interview has been scheduled with ${scheduleModal.applicant.freelancer.user.name}. An email notification has been sent to the freelancer.`,
+        });
+        
+        // Refresh meetings for this application and all meetings
+        await fetchApplicationMeetings(scheduleModal.applicant.id);
+        await fetchAllMeetings();
+        handleCloseScheduleModal();
+      }
+    } catch (error) {
+      console.error('Failed to schedule interview:', error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule interview. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSchedulingInterview(false);
+    }
+  };
+
+  const fetchApplicationMeetings = async (applicationId: string) => {
+    try {
+      const response = await clientService.getApplicationMeetings(applicationId);
+      if (response.success) {
+        setApplicationMeetings(prev => ({
+          ...prev,
+          [applicationId]: response.data.meetings || []
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch application meetings:', error);
+    }
+  };
+  // Fetch meetings for all applications on component mount
+  const fetchAllApplicationMeetings = async () => {
+    const meetingPromises = applications.map(app => fetchApplicationMeetings(app.id));
+    await Promise.all(meetingPromises);
+  };
+
+  // Fetch all meetings for the meetings tab
+  const fetchAllMeetings = async () => {
+    try {
+      setIsMeetingsLoading(true);
+      const response = await clientService.getAllMeetings(1, 50);
+      if (response.success) {
+        setAllMeetings(response.data.meetings || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch all meetings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load meetings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMeetingsLoading(false);
+    }
+  };
+
+  // Update the useEffect to also fetch meetings
+  useEffect(() => {
+    if (applications.length > 0) {
+      fetchAllApplicationMeetings();
+    }
+  }, [applications]);
+
+  // Fetch all meetings when component mounts
+  useEffect(() => {
+    fetchAllMeetings();
+  }, []);
 
   // Project filtering functions
   const getFilteredProjects = () => {
@@ -527,9 +635,8 @@ ${profile?.name || 'Client'}`);
           <p className="text-sm sm:text-base text-gray-600">Manage your projects and find the perfect talent</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          {/* Mobile-Responsive Tabs */}
-          <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 h-auto p-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">          {/* Mobile-Responsive Tabs */}
+          <TabsList className="grid w-full grid-cols-4 bg-white border border-gray-200 h-auto p-1">
             <TabsTrigger value="overview" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
@@ -541,6 +648,10 @@ ${profile?.name || 'Client'}`);
             <TabsTrigger value="applicants" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Applicants</span>
               <span className="sm:hidden">Apps</span>
+            </TabsTrigger>
+            <TabsTrigger value="meetings" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Meetings</span>
+              <span className="sm:hidden">Meets</span>
             </TabsTrigger>
           </TabsList>
 
@@ -615,13 +726,13 @@ ${profile?.name || 'Client'}`);
                     <Search className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="text-sm sm:text-base">Browse Freelancers</span>
                   </Button>
-                  <Button 
+                  {/* <Button 
                     variant="outline" 
                     className="h-auto p-4 sm:p-6 flex-col space-y-2 border-gray-200 sm:col-span-2 lg:col-span-1"
                   >
                     <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
                     <span className="text-sm sm:text-base">Messages</span>
-                  </Button>
+                  </Button> */}
                 </div>
               </CardContent>
             </Card>
@@ -828,13 +939,13 @@ ${profile?.name || 'Client'}`);
                 </div>
 
                 <div className="flex gap-2">
-                  <div className="relative flex-1 sm:w-64">
+                  {/* <div className="relative flex-1 sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       placeholder="Search applicants..."
                       className="pl-10 border-gray-200 focus:border-blue-500 h-10"
                     />
-                  </div>
+                  </div> */}
                   {/* <Button variant="outline" className="border-gray-200 h-10 px-3">
                     <Filter className="w-4 h-4" />
                   </Button> */}
@@ -940,18 +1051,37 @@ ${profile?.name || 'Client'}`);
                                       </div>
                                     </div>
                                   </div>
-                                  
-                                  {/* Proposal Preview */}
+                                    {/* Proposal Preview */}
                                   <div>
                                     <h5 className="font-medium text-gray-900 text-sm mb-1">Proposal:</h5>
                                     <p className="text-gray-600 text-sm line-clamp-2">
                                       {application.proposal || "No proposal provided."}
                                     </p>
                                   </div>
+
+                                  {/* Meeting Countdown */}
+                                  {applicationMeetings[application.id]?.length > 0 && (
+                                    <div className="mt-3">
+                                      {applicationMeetings[application.id].map((meeting: any) => {
+                                        // Combine date and time for the meeting
+                                        const meetingDateTime = new Date(`${meeting.scheduledDate.split('T')[0]}T${meeting.scheduledTime}:00`);
+                                        return (
+                                          <MeetingCountdown
+                                            key={meeting.id}
+                                            meetingTime={meetingDateTime.toISOString()}
+                                            meetingLink={meeting.googleMeetLink}
+                                            title={meeting.title}
+                                            duration={meeting.duration}
+                                          />
+                                        );
+                                      })}
+                                    </div>
+                                  )}
                                   
                                   {/* Action Buttons */}
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-gray-100 gap-3 sm:gap-0">
-                                    <div className="flex flex-col sm:flex-row gap-2">                                      <Button 
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                      <Button 
                                         variant="outline" 
                                         size="sm"
                                         onClick={() => handleOpenApplicantModal(application)}
@@ -974,6 +1104,19 @@ ${profile?.name || 'Client'}`);
                                         <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                         Message
                                       </Button>
+
+                                      {/* Schedule Interview Button */}
+                                      {(!applicationMeetings[application.id] || applicationMeetings[application.id].length === 0) && (
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          className="border-purple-200 text-purple-600 hover:bg-purple-50 text-xs"
+                                          onClick={() => handleOpenScheduleModal(application)}
+                                        >
+                                          <Video className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                                          Schedule Interview
+                                        </Button>
+                                      )}
                                     </div>
                                     
                                     <div className="flex gap-2">
@@ -1048,6 +1191,167 @@ ${profile?.name || 'Client'}`);
                         </Button>
                       )}
                     </div>
+                  </div>
+                )}
+              </div>
+            )}          </TabsContent>
+
+          <TabsContent value="meetings" className="space-y-4 sm:space-y-6">
+            {/* Mobile-Responsive Header */}
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Scheduled Meetings</h2>
+                <p className="text-sm text-gray-600 mt-1">{allMeetings.length} total meetings</p>
+              </div>
+            </div>
+
+            {/* Loading State */}
+            {isMeetingsLoading && (
+              <div className="text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-sm sm:text-base text-gray-600 mt-2">Loading meetings...</p>
+              </div>
+            )}
+
+            {/* Meetings Display */}
+            {!isMeetingsLoading && (
+              <div className="space-y-4 sm:space-y-6">
+                {allMeetings.length > 0 ? (
+                  <div className="grid gap-4 sm:gap-6">
+                    {allMeetings.map((meeting) => {
+                      // Combine date and time for the meeting
+                      const meetingDateTime = new Date(`${meeting.scheduledDate.split('T')[0]}T${meeting.scheduledTime}:00`);
+                      
+                      return (
+                        <Card key={meeting.id} className="bg-white border-gray-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
+                              {/* Meeting Info */}
+                              <div className="flex-1 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                  <div>
+                                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
+                                      {meeting.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-2">
+                                      {meeting.description}
+                                    </p>
+                                  </div>
+                                  <Badge 
+                                    variant={meeting.status === 'SCHEDULED' ? 'default' : 'secondary'}
+                                    className="self-start"
+                                  >
+                                    {meeting.status}
+                                  </Badge>
+                                </div>
+
+                                {/* Project and Freelancer Info */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1">Project:</h4>
+                                    <p className="text-sm text-gray-600">{meeting.project?.title}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1">Freelancer:</h4>
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="w-6 h-6">
+                                        <AvatarImage src={meeting.application?.freelancer?.user?.profileImage || "/placeholder.svg"} />
+                                        <AvatarFallback className="text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                                          {meeting.application?.freelancer?.user?.name ? 
+                                            meeting.application.freelancer.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 
+                                            'FL'
+                                          }
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="text-sm text-gray-900">{meeting.application?.freelancer?.user?.name}</p>
+                                        <p className="text-xs text-gray-500">{meeting.application?.freelancer?.user?.email}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Meeting Details */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Date</p>
+                                      <p className="text-gray-600">{new Date(meeting.scheduledDate).toLocaleDateString()}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Time</p>
+                                      <p className="text-gray-600">{meeting.scheduledTime} ({meeting.timezone})</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Video className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Duration</p>
+                                      <p className="text-gray-600">{meeting.duration} minutes</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-100">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => window.open(meeting.googleMeetLink, '_blank')}
+                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                  >
+                                    <Video className="w-4 h-4 mr-2" />
+                                    Open Meeting Link
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleMessageFreelancer(
+                                      meeting.application?.freelancer?.user?.email || '',
+                                      meeting.application?.freelancer?.user?.name || 'Freelancer',
+                                      meeting.project?.title || 'Project'
+                                    )}
+                                    className="border-gray-200"
+                                  >
+                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                    Message Freelancer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Meeting Countdown */}
+                              <div className="lg:w-80">
+                                <MeetingCountdown
+                                  meetingTime={meetingDateTime.toISOString()}
+                                  meetingLink={meeting.googleMeetLink}
+                                  title={meeting.title}
+                                  duration={meeting.duration}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 sm:py-12">
+                    <Video className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Meetings Scheduled</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-md mx-auto">
+                      You haven't scheduled any interviews yet. Go to the Applicants tab to schedule meetings with freelancers.
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab('applicants')}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      View Applicants
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1224,9 +1528,7 @@ ${profile?.name || 'Client'}`);
                     ))}
                   </div>
                 </CardContent>
-              </Card>
-
-              {/* Proposal */}
+              </Card>              {/* Proposal */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -1243,49 +1545,93 @@ ${profile?.name || 'Client'}`);
                 </CardContent>
               </Card>
 
+              {/* Meeting Schedule */}
+              {applicationMeetings[selectedApplicant.id]?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Video className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      Scheduled Meeting
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {applicationMeetings[selectedApplicant.id].map((meeting: any) => {
+                      const meetingDateTime = new Date(`${meeting.scheduledDate.split('T')[0]}T${meeting.scheduledTime}:00`);
+                      return (
+                        <MeetingCountdown
+                          key={meeting.id}
+                          meetingTime={meetingDateTime.toISOString()}
+                          meetingLink={meeting.googleMeetLink}
+                          title={meeting.title}
+                          duration={meeting.duration}
+                        />
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
-                {selectedApplicant.status === 'PENDING' && (
-                  <>
+              <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6 border-t border-gray-200">
+                <div className="flex gap-2">
+                  {/* Schedule Interview Button */}
+                  {(!applicationMeetings[selectedApplicant.id] || applicationMeetings[selectedApplicant.id].length === 0) && (
                     <Button 
                       variant="outline" 
-                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
                       onClick={() => {
-                        handleRejectApplication(selectedApplicant.projectId, selectedApplicant.id);
+                        handleOpenScheduleModal(selectedApplicant);
                         handleCloseApplicantModal();
                       }}
-                      disabled={isActionLoading === `reject-${selectedApplicant.id}`}
                     >
-                      {isActionLoading === `reject-${selectedApplicant.id}` ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
-                      ) : (
-                        <X className="w-4 h-4 mr-2" />
-                      )}
-                      Reject Application
+                      <Video className="w-4 h-4 mr-2" />
+                      Schedule Interview
                     </Button>
-                    <Button 
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        handleApproveApplication(selectedApplicant.projectId, selectedApplicant.id);
-                        handleCloseApplicantModal();
-                      }}
-                      disabled={isActionLoading === `approve-${selectedApplicant.id}`}
-                    >
-                      {isActionLoading === `approve-${selectedApplicant.id}` ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      ) : (
-                        <Check className="w-4 h-4 mr-2" />
-                      )}
-                      Accept Application
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  {selectedApplicant.status === 'PENDING' && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          handleRejectApplication(selectedApplicant.projectId, selectedApplicant.id);
+                          handleCloseApplicantModal();
+                        }}
+                        disabled={isActionLoading === `reject-${selectedApplicant.id}`}
+                      >
+                        {isActionLoading === `reject-${selectedApplicant.id}` ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
+                        ) : (
+                          <X className="w-4 h-4 mr-2" />
+                        )}
+                        Reject Application
+                      </Button>
+                      <Button 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          handleApproveApplication(selectedApplicant.projectId, selectedApplicant.id);
+                          handleCloseApplicantModal();
+                        }}
+                        disabled={isActionLoading === `approve-${selectedApplicant.id}`}
+                      >
+                        {isActionLoading === `approve-${selectedApplicant.id}` ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        ) : (
+                          <Check className="w-4 h-4 mr-2" />
+                        )}
+                        Accept Application
+                      </Button>
+                    </>
+                  )}
+                    {selectedApplicant.status !== 'PENDING' && (
+                    <Button variant="outline" onClick={handleCloseApplicantModal}>
+                      Close
                     </Button>
-                  </>
-                )}
-                
-                {selectedApplicant.status !== 'PENDING' && (
-                  <Button variant="outline" onClick={handleCloseApplicantModal}>
-                    Close
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1300,6 +1646,17 @@ ${profile?.name || 'Client'}`);
         isSubmitting={isActionLoading === `rating-${ratingModal.projectId}`}
         projectTitle={ratingModal.projectTitle}
       />
+
+      {/* Schedule Interview Modal */}
+      {scheduleModal.applicant && (
+        <ScheduleInterviewModal
+          isOpen={scheduleModal.isOpen}
+          onClose={handleCloseScheduleModal}
+          onSchedule={handleScheduleInterview}
+          applicant={scheduleModal.applicant}
+          isLoading={isSchedulingInterview}
+        />
+      )}
     </div>
   );
 };

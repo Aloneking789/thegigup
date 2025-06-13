@@ -19,7 +19,8 @@ import {
   FileText,
   Award,
   LogOut,
-  CheckCircle
+  CheckCircle,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ import {
 import { logout, isLoggedIn } from "@/lib/config/api";
 import JobDetailModal from "@/components/JobDetailModal";
 import MobileNav from "@/components/MobileNav";
+import MeetingCountdown from "@/components/MeetingCountdown";
 
 const mockJobs = [
   {
@@ -93,8 +95,7 @@ const FreelancerDashboard = () => {
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<PublicJobItem | null>(null);
   const [showJobDetailModal, setShowJobDetailModal] = useState(false);
-  
-  // API state
+    // API state
   const [profile, setProfile] = useState<FreelancerProfile | null>(null);
   const [publicJobs, setPublicJobs] = useState<PublicJobItem[]>([]);
   const [assignedProjects, setAssignedProjects] = useState<AssignedProject[]>([]);
@@ -102,7 +103,13 @@ const FreelancerDashboard = () => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [isLoadingAssigned, setIsLoadingAssigned] = useState(true);
-  const [isLoadingApplications, setIsLoadingApplications] = useState(true);  const [profileError, setProfileError] = useState<string | null>(null);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  
+  // Meeting state
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [applicationMeetings, setApplicationMeetings] = useState<Record<string, any[]>>({});
+  const [isLoadingMeetings, setIsLoadingMeetings] = useState(true);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -321,11 +328,62 @@ const FreelancerDashboard = () => {
       } finally {
         setIsLoadingApplications(false);
       }
+    };    if (!isLoadingProfile) {
+      fetchApplications();
+    }  }, [isLoadingProfile, toast]);
+
+  // Fetch all meetings
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        setIsLoadingMeetings(true);
+        const response = await freelancerService.getAllMeetings(1, 20);
+        if (response.success) {
+          setMeetings(response.data.meetings || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch meetings:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load meetings",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoadingMeetings(false);
+      }
     };
 
     if (!isLoadingProfile) {
-      fetchApplications();
-    }  }, [isLoadingProfile, toast]);
+      fetchMeetings();
+    }
+  }, [isLoadingProfile, toast]);
+
+  // Fetch application meetings
+  const fetchApplicationMeetings = async (applicationId: string) => {
+    try {
+      const response = await freelancerService.getApplicationMeetings(applicationId);
+      if (response.success) {
+        setApplicationMeetings(prev => ({
+          ...prev,
+          [applicationId]: response.data.meetings || []
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch application meetings:', error);
+    }
+  };
+
+  // Fetch meetings for all applications
+  useEffect(() => {
+    const fetchAllApplicationMeetings = async () => {
+      const meetingPromises = applications.map(app => fetchApplicationMeetings(app.id));
+      await Promise.all(meetingPromises);
+    };
+
+    if (applications.length > 0) {
+      fetchAllApplicationMeetings();
+    }
+  }, [applications]);
 
   const profileCompletion = calculateProfileCompletion(profile);
   const isProfileComplete = isProfileSufficientlyComplete(profile);
@@ -451,8 +509,7 @@ const FreelancerDashboard = () => {
           <p className="text-sm sm:text-base text-gray-600">Find your next opportunity and manage your freelance career</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">          
-          {/* Mobile Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">            {/* Mobile Tabs */}
           <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 bg-white border border-gray-200 h-auto p-1">
             <TabsTrigger value="jobs" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Find Jobs</span>
@@ -467,10 +524,10 @@ const FreelancerDashboard = () => {
               <span className="sm:hidden">Apps</span>
             </TabsTrigger>
             <TabsTrigger value="profile" className="hidden sm:block text-sm py-2 px-3">Profile</TabsTrigger>
-            <TabsTrigger value="earnings" className="hidden sm:block text-sm py-2 px-3">Earnings</TabsTrigger>
+            <TabsTrigger value="meetings" className="hidden sm:block text-sm py-2 px-3">Meetings</TabsTrigger>
           </TabsList>
 
-          {/* Mobile Bottom Navigation for Profile and Earnings */}
+          {/* Mobile Bottom Navigation for Profile and Meetings */}
           <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
             <div className="grid grid-cols-2">
               <button
@@ -485,18 +542,18 @@ const FreelancerDashboard = () => {
                 Profile
               </button>
               <button
-                onClick={() => setActiveTab("earnings")}
+                onClick={() => setActiveTab("meetings")}
                 className={`flex items-center justify-center py-3 px-4 text-xs font-medium ${
-                  activeTab === "earnings" 
+                  activeTab === "meetings" 
                     ? "text-blue-600 bg-blue-50" 
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                <DollarSign className="w-4 h-4 mr-1" />
-                Earnings
+                <Calendar className="w-4 h-4 mr-1" />
+                Meetings
               </button>
             </div>
-          </div>          <TabsContent value="jobs" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+          </div><TabsContent value="jobs" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
             {!isProfileComplete ? (
               /* Profile Completion Prompt */
               <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
@@ -826,8 +883,26 @@ const FreelancerDashboard = () => {
                                 <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                                 <span>Budget: ₹{application.project.budgetMin.toLocaleString()} - ₹{application.project.budgetMax.toLocaleString()}</span>
                               </div>
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3">{application.proposal}</p>
+                            </div>                            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3">{application.proposal}</p>
+                            
+                            {/* Meeting Countdown */}
+                            {applicationMeetings[application.id]?.length > 0 && (
+                              <div className="mt-3">
+                                {applicationMeetings[application.id].map((meeting: any) => {
+                                  // Combine date and time for the meeting
+                                  const meetingDateTime = new Date(`${meeting.scheduledDate.split('T')[0]}T${meeting.scheduledTime}:00`);
+                                  return (
+                                    <MeetingCountdown
+                                      key={meeting.id}
+                                      meetingTime={meetingDateTime.toISOString()}
+                                      meetingLink={meeting.googleMeetLink}
+                                      title={meeting.title}
+                                      duration={meeting.duration}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                           <div className="text-left sm:text-right">
                             <Badge 
@@ -956,64 +1031,154 @@ const FreelancerDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>          <TabsContent value="earnings" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-                  <CardTitle className="text-xs sm:text-sm font-medium">Total Earnings</CardTitle>
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
-                  <p className="text-xs text-gray-600">All time</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-                  <CardTitle className="text-xs sm:text-sm font-medium">This Month</CardTitle>
-                  <Calendar className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
-                  <p className="text-xs text-gray-600">+15% from last month</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-                  <CardTitle className="text-xs sm:text-sm font-medium">Available</CardTitle>
-                  <Award className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold">₹000</div>
-                  <p className="text-xs text-gray-600">Ready to withdraw</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-                  <CardTitle className="text-xs sm:text-sm font-medium">Average Rate</CardTitle>
-                  <Clock className="h-4 w-4 text-orange-600" />
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0">
-                  <div className="text-lg sm:text-2xl font-bold">₹00</div>
-                  <p className="text-xs text-gray-600">Average rate</p>
-                </CardContent>
-              </Card>
+          </TabsContent>          <TabsContent value="meetings" className="space-y-4 sm:space-y-6 pb-20 sm:pb-0">
+            {/* Mobile-Responsive Header */}
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Scheduled Meetings</h2>
+                <p className="text-sm text-gray-600 mt-1">{meetings.length} total meetings</p>
+              </div>
             </div>
 
-            <Card className="bg-white border-gray-200">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Recent Payments</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0">
-                <div className="text-center py-6 sm:py-8">
-                  <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-sm sm:text-base text-gray-600">No recent payments to show</p>
-                </div>
-              </CardContent>            </Card>
-          </TabsContent>        </Tabs>
+            {/* Loading State */}
+            {isLoadingMeetings && (
+              <div className="text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-sm sm:text-base text-gray-600 mt-2">Loading meetings...</p>
+              </div>
+            )}
+
+            {/* Meetings Display */}
+            {!isLoadingMeetings && (
+              <div className="space-y-4 sm:space-y-6">
+                {meetings.length > 0 ? (
+                  <div className="grid gap-4 sm:gap-6">
+                    {meetings.map((meeting) => {
+                      // Combine date and time for the meeting
+                      const meetingDateTime = new Date(`${meeting.scheduledDate.split('T')[0]}T${meeting.scheduledTime}:00`);
+                      
+                      return (
+                        <Card key={meeting.id} className="bg-white border-gray-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-6">
+                              {/* Meeting Info */}
+                              <div className="flex-1 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                  <div>
+                                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
+                                      {meeting.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-2">
+                                      {meeting.description}
+                                    </p>
+                                  </div>
+                                  <Badge 
+                                    variant={meeting.status === 'SCHEDULED' ? 'default' : 'secondary'}
+                                    className="self-start"
+                                  >
+                                    {meeting.status}
+                                  </Badge>
+                                </div>
+
+                                {/* Project and Client Info */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1">Project:</h4>
+                                    <p className="text-sm text-gray-600">{meeting.project?.title}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1">Client:</h4>
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="w-6 h-6">
+                                        <AvatarImage src={meeting.project?.client?.user?.profileImage || "/placeholder.svg"} />
+                                        <AvatarFallback className="text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                                          {meeting.project?.client?.user?.name ? 
+                                            meeting.project.client.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 
+                                            'CL'
+                                          }
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="text-sm text-gray-900">{meeting.project?.client?.user?.name}</p>
+                                        <p className="text-xs text-gray-500">{meeting.project?.client?.user?.email}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Meeting Details */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Date</p>
+                                      <p className="text-gray-600">{new Date(meeting.scheduledDate).toLocaleDateString()}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Time</p>
+                                      <p className="text-gray-600">{meeting.scheduledTime} ({meeting.timezone})</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Video className="w-4 h-4 text-blue-600" />
+                                    <div>
+                                      <p className="font-medium">Duration</p>
+                                      <p className="text-gray-600">{meeting.duration} minutes</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-100">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => window.open(meeting.googleMeetLink, '_blank')}
+                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                  >
+                                    <Video className="w-4 h-4 mr-2" />
+                                    Open Meeting Link
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Meeting Countdown */}
+                              <div className="lg:w-80">
+                                <MeetingCountdown
+                                  meetingTime={meetingDateTime.toISOString()}
+                                  meetingLink={meeting.googleMeetLink}
+                                  title={meeting.title}
+                                  duration={meeting.duration}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 sm:py-12">
+                    <Video className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Meetings Scheduled</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-md mx-auto">
+                      You don't have any scheduled meetings yet. Meetings will appear here when clients schedule interviews with you.
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab('applications')}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      View Applications
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent></Tabs>
       </div>
       
       {/* Job Detail Modal */}
