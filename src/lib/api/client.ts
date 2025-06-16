@@ -221,9 +221,7 @@ export class ClientService {
     }
 
     return response.json();
-  }
-
-  // Meeting Scheduling Methods
+  }  // Meeting Scheduling Methods
   async scheduleInterview(applicationId: string, meetingData: {
     googleMeetLink: string;
     meetingDate: string;
@@ -234,21 +232,37 @@ export class ClientService {
     duration?: number;
     meetingType?: string;
   }): Promise<ApiResponse<any>> {
+    const headers = this.getAuthHeaders();
+    console.log('Authorization headers:', headers);
+    console.log('Current token:', getCurrentToken());
+    
     const response = await fetch(
       getApiUrl(`/client/applications/${applicationId}/meetings`),
       {
         method: 'POST',
-        headers: this.getAuthHeaders(),
+        headers,
         body: JSON.stringify(meetingData),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to schedule interview: ${response.statusText}`);
+      // Parse error response for better debugging
+      let errorMessage = `Failed to schedule interview: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error('Schedule interview error details:', errorData);
+        console.error('Response status:', response.status);
+        console.error('Request data sent:', meetingData);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
   }
+
   async getApplicationMeetings(applicationId: string): Promise<ApiResponse<any>> {
     const response = await fetch(
       getApiUrl(`/client/applications/${applicationId}/meetings`),

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'https://freelancer-zfoo.onrender.com/api/v1',
+  BASE_URL: 'https://api.thegigup.com/api/v1',
   ENDPOINTS: {   
         EMAIL: {
       SEND_VERIFICATION_OTP: '/email/send-verification-otp',

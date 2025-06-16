@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { 
   Plus, 
   Search, 
-  Filter, 
+  Filter,   
   Users, 
   Eye, 
   Edit, 
@@ -396,12 +396,16 @@ ${profile?.name || 'Client'}`);
       isOpen: false,
       applicant: null
     });
-  };
-  const handleScheduleInterview = async (meetingData: any) => {
+  };  const handleScheduleInterview = async (meetingData: any) => {
     if (!scheduleModal.applicant) return;
 
     try {
       setIsSchedulingInterview(true);
+      
+      // Log the data being sent for debugging
+      console.log('Scheduling interview with data:', meetingData);
+      console.log('Application ID:', scheduleModal.applicant.id);
+      
       const response = await clientService.scheduleInterview(scheduleModal.applicant.id, meetingData);
       
       if (response.success) {
@@ -414,9 +418,13 @@ ${profile?.name || 'Client'}`);
         await fetchApplicationMeetings(scheduleModal.applicant.id);
         await fetchAllMeetings();
         handleCloseScheduleModal();
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error('Failed to schedule interview:', error);
+      toast({
+        title: "Error Scheduling Interview",
+        description: error instanceof Error ? error.message : "Failed to schedule interview. Please try again.",
+        variant: "destructive"
+      });
       toast({
         title: "Error",
         description: "Failed to schedule interview. Please try again.",
