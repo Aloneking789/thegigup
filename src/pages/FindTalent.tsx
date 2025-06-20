@@ -128,36 +128,88 @@ const FindTalent = () => {
         maxRate: filters.maxRate < 5000 ? filters.maxRate : undefined,
         experienceLevel: filters.experienceLevel || undefined,
         availability: filters.availability || undefined,
-      });
-
-      if (response.success) {
-        let sortedFreelancers = [...response.data.freelancers];
+      });      if (response.success) {
+        let allFreelancers = [...response.data.freelancers];
         
-        // Apply sorting
+        // Apply client-side search filtering if there's a search query
+        if (debouncedQuery.trim()) {
+          allFreelancers = allFreelancers.filter(freelancer => {
+            const query = debouncedQuery.toLowerCase();
+            
+            // Search in name
+            const nameMatch = freelancer.user.name.toLowerCase().includes(query);
+            
+            // Search in skills
+            const skillsMatch = freelancer.skills.some(skill => 
+              skill.toLowerCase().includes(query)
+            );
+            
+            // Search in experience level
+            const experienceMatch = freelancer.experience?.toLowerCase().includes(query);
+            
+            // Search in bio/description if available
+            const bioMatch = freelancer.bio?.toLowerCase().includes(query);
+            
+            return nameMatch || skillsMatch || experienceMatch || bioMatch;
+          });
+        }
+          // Apply sorting
         switch (sortBy) {
           case 'rating-high':
-            sortedFreelancers.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
+            allFreelancers.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
             break;
           case 'rating-low':
-            sortedFreelancers.sort((a, b) => (a.ratings || 0) - (b.ratings || 0));
+            allFreelancers.sort((a, b) => (a.ratings || 0) - (b.ratings || 0));
             break;
           case 'rate-high':
-            sortedFreelancers.sort((a, b) => (b.hourlyRate || 0) - (a.hourlyRate || 0));
+            allFreelancers.sort((a, b) => (b.hourlyRate || 0) - (a.hourlyRate || 0));
             break;
           case 'rate-low':
-            sortedFreelancers.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+            allFreelancers.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
             break;
           case 'recent':
-            sortedFreelancers.sort((a, b) => new Date(b.user.createdAt).getTime() - new Date(a.user.createdAt).getTime());
+            allFreelancers.sort((a, b) => new Date(b.user.createdAt).getTime() - new Date(a.user.createdAt).getTime());
             break;
           case 'relevance':
           default:
-            // Keep original order for relevance
+            // For relevance, prioritize exact matches and skill matches when there's a search query
+            if (debouncedQuery.trim()) {
+              allFreelancers.sort((a, b) => {
+                const query = debouncedQuery.toLowerCase();
+                
+                // Exact name matches first
+                const aNameExact = a.user.name.toLowerCase() === query ? 2 : 0;
+                const bNameExact = b.user.name.toLowerCase() === query ? 2 : 0;
+                
+                // Partial name matches second
+                const aNamePartial = a.user.name.toLowerCase().includes(query) ? 1 : 0;
+                const bNamePartial = b.user.name.toLowerCase().includes(query) ? 1 : 0;
+                
+                // Skill matches
+                const aSkillMatch = a.skills.some(skill => skill.toLowerCase().includes(query)) ? 1 : 0;
+                const bSkillMatch = b.skills.some(skill => skill.toLowerCase().includes(query)) ? 1 : 0;
+                
+                const aScore = aNameExact + aNamePartial + aSkillMatch;
+                const bScore = bNameExact + bNamePartial + bSkillMatch;
+                
+                return bScore - aScore;
+              });
+            }
             break;
         }
         
-        setFreelancers(sortedFreelancers);
-        setPagination(response.data.pagination);
+        setFreelancers(allFreelancers);
+        
+        // Update pagination to reflect filtered results
+        if (debouncedQuery.trim() && allFreelancers.length !== response.data.freelancers.length) {
+          setPagination({
+            ...response.data.pagination,
+            total: allFreelancers.length,
+            pages: Math.ceil(allFreelancers.length / pagination.limit)
+          });
+        } else {
+          setPagination(response.data.pagination);
+        }
       } else {
         throw new Error('Failed to fetch freelancers');
       }
@@ -524,11 +576,37 @@ const FindTalent = () => {
                   </Button>
                 </div>
               </div>
-            )}
-
-            {/* Freelancers Grid */}
+            )}            {/* Freelancers Grid */}
             {!isLoading && !error && (
               <div className="space-y-6">
+                {/* Search Results Summary */}
+                {debouncedQuery.trim() && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium text-blue-900">
+                          Search Results for "{debouncedQuery}"
+                        </h3>
+                        <p className="text-sm text-blue-700">
+                          {freelancers.length} freelancer{freelancers.length !== 1 ? 's' : ''} found
+                        </p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setDebouncedQuery("");
+                        }}
+                        className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Clear Search
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 {freelancers.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 max-w-md mx-auto">
