@@ -235,7 +235,6 @@ const FindTalent = () => {
       setPagination(prev => ({ ...prev, page: 1 }));
     }
   }, [debouncedQuery, filters, sortBy]);
-
   // Utility functions
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -249,6 +248,25 @@ const FindTalent = () => {
     
     return date.toLocaleDateString();
   };
+
+  // Helper function to highlight search terms
+  const highlightSearchTerm = (text: string, searchTerm: string) => {
+    if (!searchTerm.trim()) return text;
+    
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <span key={index} className="bg-yellow-200 px-1 rounded font-medium">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
   const handleSkillToggle = (skill: string) => {
     setFilters(prev => ({
       ...prev,
@@ -636,13 +654,12 @@ const FindTalent = () => {
                           
                           {/* Main Content */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
+                            <div className="flex items-start justify-between mb-3">                              <div>
                                 <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                  {freelancer.user.name || 'Anonymous User'}
+                                  {highlightSearchTerm(freelancer.user.name || 'Anonymous User', debouncedQuery)}
                                 </h3>
                                 <p className="text-blue-600 font-medium">
-                                  {freelancer.experience ? `${freelancer.experience} Experience` : 'Experience not specified'}
+                                  {freelancer.experience ? `${highlightSearchTerm(freelancer.experience, debouncedQuery)} Experience` : 'Experience not specified'}
                                 </p>
                               </div>
                               <div className="text-right">
@@ -680,19 +697,29 @@ const FindTalent = () => {
                                 Member since {formatTimeAgo(freelancer.user.createdAt)}
                               </div>
                             </div>
-                            
-                            {/* Bio */}
+                              {/* Bio */}
                             <p className="text-gray-700 mb-4 line-clamp-2 leading-relaxed">
-                              {freelancer.user.bio || 'Professional freelancer ready to help with your project needs.'}
+                              {highlightSearchTerm(freelancer.user.bio || 'Professional freelancer ready to help with your project needs.', debouncedQuery)}
                             </p>
                             
                             {/* Skills */}
                             <div className="flex flex-wrap gap-2 mb-6">
-                              {freelancer.skills?.slice(0, 6).map((skill) => (
-                                <Badge key={skill} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">
-                                  {skill}
-                                </Badge>
-                              ))}
+                              {freelancer.skills?.slice(0, 6).map((skill) => {
+                                const isHighlighted = debouncedQuery.trim() && skill.toLowerCase().includes(debouncedQuery.toLowerCase());
+                                return (
+                                  <Badge 
+                                    key={skill} 
+                                    variant="secondary" 
+                                    className={`transition-colors ${
+                                      isHighlighted 
+                                        ? 'bg-yellow-200 text-yellow-800 border-yellow-300' 
+                                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                    }`}
+                                  >
+                                    {highlightSearchTerm(skill, debouncedQuery)}
+                                  </Badge>
+                                );
+                              })}
                               {freelancer.skills?.length > 6 && (
                                 <Badge variant="outline" className="border-blue-200 text-blue-600">
                                   +{freelancer.skills.length - 6} more

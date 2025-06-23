@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { API_CONFIG, getApiUrl, setTokenByRole } from "@/lib/config/api";
+import TermsModal from "@/components/TermsModal";
 
-type Step = 'email-verification' | 'otp-verification' | 'signup-form';
+type Step = 'email-verification' | 'otp-verification' | 'terms-acceptance' | 'signup-form';
 
 const Signup = () => {
   const [currentStep, setCurrentStep] = useState<Step>('email-verification');
@@ -18,10 +19,11 @@ const Signup = () => {
     confirmPassword: "",
     role: "",
     otp: ""
-  });
-  const [showPassword, setShowPassword] = useState(false);
+  });  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -96,15 +98,14 @@ const Signup = () => {
         }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      const data = await response.json();      if (response.ok) {
         toast({
           title: "Email Verified!",
           description: "Your email has been verified successfully.",
         });
         setIsEmailVerified(true);
-        setCurrentStep('signup-form');
+        setCurrentStep('terms-acceptance');
+        setIsTermsModalOpen(true);
       } else {
         toast({
           title: "Verification Failed",
@@ -124,6 +125,22 @@ const Signup = () => {
     }
   };
 
+  // Add handlers for terms modal
+  const handleAcceptTerms = () => {
+    setHasAcceptedTerms(true);
+    setIsTermsModalOpen(false);
+    setCurrentStep('signup-form');
+  };
+
+  const handleDeclineTerms = () => {
+    setIsTermsModalOpen(false);
+    setCurrentStep('otp-verification');
+    toast({
+      title: "Terms Required",
+      description: "You must accept the terms and conditions to continue.",
+      variant: "destructive"
+    });
+  };
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -131,6 +148,15 @@ const Signup = () => {
       toast({
         title: "Error",
         description: "Please verify your email first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!hasAcceptedTerms) {
+      toast({
+        title: "Error",
+        description: "Please accept the terms and conditions first",
         variant: "destructive"
       });
       return;
@@ -351,7 +377,39 @@ const Signup = () => {
           disabled={isLoading}
         >
           Didn't receive the code? Resend
-        </button>
+        </button>      </div>
+    </div>
+  );
+
+  const renderTermsAcceptance = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center mb-3">
+          <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+          <span className="text-sm text-green-600 font-medium">Email Verified</span>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Accept Terms & Conditions</h2>
+        <p className="text-gray-600">Please review and accept our terms to continue</p>
+      </div>
+      
+      <div className="text-center py-8">
+        <p className="text-gray-500 mb-4">Please review the terms and conditions in the modal that opened.</p>
+        <Button
+          onClick={() => setIsTermsModalOpen(true)}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+        >
+          Review Terms & Conditions
+        </Button>
+      </div>
+      
+      <div className="flex justify-center">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentStep('otp-verification')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Verification
+        </Button>
       </div>
     </div>
   );
@@ -359,9 +417,15 @@ const Signup = () => {
   const renderSignupForm = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="flex items-center justify-center mb-3">
-          <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-          <span className="text-sm text-green-600 font-medium">Email Verified</span>
+        <div className="flex items-center justify-center space-x-4 mb-3">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+            <span className="text-sm text-green-600 font-medium">Email Verified</span>
+          </div>
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+            <span className="text-sm text-green-600 font-medium">Terms Accepted</span>
+          </div>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Complete Your Profile</h2>
         <p className="text-gray-600">Fill in your details to create your account</p>
@@ -469,34 +533,16 @@ const Signup = () => {
               <div className="text-sm font-medium">Find Work</div>
               <div className="text-xs text-gray-500">I'm a freelancer</div>
             </button>
-          </div>
-        </div>
-        
-        <div className="flex items-center">
-          <input
-            id="terms"
-            name="terms"
-            type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            required
-          />
-          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-            I agree to the{" "}
-            <Link to="/terms" className="text-blue-600 hover:text-blue-500">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
+          </div>        </div>
         
         <div className="flex space-x-3">
           <Button
             type="button"
             variant="outline"
-            onClick={() => setCurrentStep('otp-verification')}
+            onClick={() => {
+              setCurrentStep('terms-acceptance');
+              setIsTermsModalOpen(true);
+            }}
             className="flex-1"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -532,10 +578,10 @@ const Signup = () => {
             <CardTitle className="text-2xl font-bold text-gray-800">Join TheGigUp</CardTitle>
             <p className="text-gray-600">Create your account to get started</p>
           </CardHeader>
-          
-          <CardContent>
+            <CardContent>
             {currentStep === 'email-verification' && renderEmailVerification()}
             {currentStep === 'otp-verification' && renderOTPVerification()}
+            {currentStep === 'terms-acceptance' && renderTermsAcceptance()}
             {currentStep === 'signup-form' && renderSignupForm()}
             
             <div className="mt-6 text-center">
@@ -548,6 +594,13 @@ const Signup = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Terms Modal */}
+        <TermsModal
+          isOpen={isTermsModalOpen}
+          onClose={handleDeclineTerms}
+          onAccept={handleAcceptTerms}
+        />
       </div>
     </div>
   );
