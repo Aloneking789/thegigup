@@ -539,7 +539,7 @@ ${profile?.name || 'Client'}`);
   };
 
   const formatBudget = (budgetMin: number, budgetMax: number) => {
-    return `₹${budgetMin.toLocaleString()} - ₹${budgetMax.toLocaleString()}`;
+    return `$${budgetMin.toLocaleString()} - $${budgetMax.toLocaleString()}`;
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -1431,7 +1431,7 @@ ${profile?.name || 'Client'}`);
                     
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-green-600" />
-                      <span className="text-gray-600">₹{selectedApplicant.freelancer.hourlyRate}/hr</span>
+                      <span className="text-gray-600">${selectedApplicant.freelancer.hourlyRate}/hr</span>
                     </div>
                   </div>
                   
@@ -1511,7 +1511,7 @@ ${profile?.name || 'Client'}`);
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
                       <div className="flex items-center text-green-600">
                         <DollarSign className="w-4 h-4 mr-1" />
-                        <span>₹{selectedApplicant.project.budgetMin} - ₹{selectedApplicant.project.budgetMax}</span>
+                        <span>${selectedApplicant.project.budgetMin} - ${selectedApplicant.project.budgetMax}</span>
                       </div>
                       <Badge variant="outline" className="self-start">{selectedApplicant.project.status}</Badge>
                     </div>

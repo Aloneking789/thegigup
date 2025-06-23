@@ -394,7 +394,7 @@ const PublicProfile = () => {
                 </CardHeader>                <CardContent>
                   <div className="text-2xl font-bold">
                     {isFreelancer 
-                      ? (freelancerData?.professionalInfo?.hourlyRate ? `₹${freelancerData.professionalInfo.hourlyRate}/hr` : 'Not set')
+                      ? (freelancerData?.professionalInfo?.hourlyRate ? `$${freelancerData.professionalInfo.hourlyRate}/hr` : 'Not set')
                       : (clientData?.statistics?.averageRating ? `${clientData.statistics.averageRating}/5` : 'No rating')
                     }
                   </div>
@@ -440,11 +440,11 @@ const PublicProfile = () => {
                       <div>
                         <p className="text-sm font-medium text-green-800">Total Earnings</p>
                         <p className="text-2xl font-bold text-green-900">
-                          ₹{freelancerData.statistics.totalProjectsValue?.toLocaleString() || 0}
+                          ${freelancerData.statistics.totalProjectsValue?.toLocaleString() || 0}
                         </p>
                       </div>
                       <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center">
-                        <span className="text-green-700 font-bold">₹</span>
+                        <span className="text-green-700 font-bold">$</span>
                       </div>
                     </div>
                   </CardContent>
@@ -655,7 +655,7 @@ const PublicProfile = () => {
                             <div>
                               <p className="text-sm font-medium text-gray-700">Project Budget</p>
                               <p className="text-lg font-bold text-green-600">
-                                ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()}
+                                ${project.budget.min.toLocaleString()} - ${project.budget.max.toLocaleString()}
                               </p>
                             </div>
                             <div>
@@ -724,7 +724,7 @@ const PublicProfile = () => {
                             ))}
                           </div>
                           <div className="text-sm text-gray-500">
-                            Budget: ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()} • Duration: {project.duration}
+                            Budget: ${project.budget.min.toLocaleString()} - ${project.budget.max.toLocaleString()} • Duration: {project.duration}
                           </div>
                           {project.freelancer && (
                             <div className="mt-3 pt-3 border-t">

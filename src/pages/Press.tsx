@@ -85,7 +85,7 @@ const Press = () => {
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="font-medium">Press Contact:</p>
               <p className="text-gray-600">press@thegigup.com</p>
-              <p className="text-gray-600">+1 (555) 123-4567</p>
+
             </div>
           </div>
 

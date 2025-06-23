@@ -243,11 +243,11 @@ const Footer = ({ className = "" }: FooterProps) => {
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-gray-400">
-              {/* <li>
-                <Link to="/about" className="hover:text-white transition-colors">
-                  About Us
+              <li>
+                <Link to="/terms" className="hover:text-white transition-colors">
+                  Terms
                 </Link>
-              </li> */}
+              </li>
               <li>
                 <Link to="/press" className="hover:text-white transition-colors">
                   Press & News

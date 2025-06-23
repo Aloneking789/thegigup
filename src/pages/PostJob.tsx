@@ -288,7 +288,7 @@ const PostJob = () => {  const navigate = useNavigate();
               {/* Budget Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Budget Range (₹) <span className="text-red-500">*</span>
+                  Budget Range ($) <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -356,11 +356,11 @@ const PostJob = () => {  const navigate = useNavigate();
                           <span className="font-medium">Budget:</span>
                           <span className="ml-1">
                             {formData.budgetMin && formData.budgetMax 
-                              ? `₹${parseFloat(formData.budgetMin).toLocaleString()} - ₹${parseFloat(formData.budgetMax).toLocaleString()}`
+                              ? `$${parseFloat(formData.budgetMin).toLocaleString()} - $${parseFloat(formData.budgetMax).toLocaleString()}`
                               : formData.budgetMin 
-                                ? `₹${parseFloat(formData.budgetMin).toLocaleString()}+`
+                                ? `$${parseFloat(formData.budgetMin).toLocaleString()}+`
                                 : formData.budgetMax 
-                                  ? `Up to ₹${parseFloat(formData.budgetMax).toLocaleString()}`
+                                  ? `Up to $${parseFloat(formData.budgetMax).toLocaleString()}`
                                   : ''
                             }
                           </span>

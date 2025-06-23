@@ -484,7 +484,7 @@ const FindTalent = () => {
 
                   {/* Rate Filter */}
                   <div>
-                    <h4 className="font-medium mb-3">Hourly Rate (₹)</h4>
+                    <h4 className="font-medium mb-3">Hourly Rate ($)</h4>
                     <div className="space-y-3">
                       <Slider
                         value={[filters.maxRate]}
@@ -494,8 +494,8 @@ const FindTalent = () => {
                         className="w-full"
                       />
                       <div className="flex justify-between text-sm text-gray-600">
-                        <span>₹0</span>
-                        <span>₹{filters.maxRate}+</span>
+                        <span>$0</span>
+                        <span>${filters.maxRate}+</span>
                       </div>
                     </div>
                   </div>
@@ -664,7 +664,7 @@ const FindTalent = () => {
                               </div>
                               <div className="text-right">
                                 <p className="text-2xl font-bold text-gray-900">
-                                  {freelancer.hourlyRate ? `₹${freelancer.hourlyRate}` : 'Rate not set'}
+                                  {freelancer.hourlyRate ? `$${freelancer.hourlyRate}` : 'Rate not set'}
                                   <span className="text-sm text-gray-500 font-normal">/hr</span>
                                 </p>
                                 <div className="flex items-center justify-end mt-1">
@@ -827,7 +827,7 @@ const FindTalent = () => {
             name: selectedFreelancer.user.name || 'Anonymous User',
             title: selectedFreelancer.experience ? `${selectedFreelancer.experience} Experience` : 'Experience not specified',
             skills: selectedFreelancer.skills,
-            rate: selectedFreelancer.hourlyRate ? `₹${selectedFreelancer.hourlyRate}/hr` : 'Rate not set',
+            rate: selectedFreelancer.hourlyRate ? `$${selectedFreelancer.hourlyRate}/hr` : 'Rate not set',
             rating: selectedFreelancer.ratings || 0,
             reviews: selectedFreelancer.projectsCompleted,
             location: selectedFreelancer.user.location || 'Location not specified',

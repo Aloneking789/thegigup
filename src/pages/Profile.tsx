@@ -318,7 +318,7 @@ const Profile = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {isFreelancer 
-                      ? (freelancerData?.hourlyRate ? `₹${freelancerData.hourlyRate}/hr` : 'Not set')
+                      ? (freelancerData?.hourlyRate ? `$${freelancerData.hourlyRate}/hr` : 'Not set')
                       : (clientData?.ratings ? `${clientData.ratings}/5` : 'No rating')
                     }
                   </div>
@@ -467,7 +467,7 @@ const Profile = () => {
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-gray-900">
-                                ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()}
+                                ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
                               </div>
                               <div className="text-sm text-gray-500">Budget</div>
                             </div>
@@ -529,7 +529,7 @@ const Profile = () => {
                             ))}
                           </div>
                           <div className="text-sm text-gray-500">
-                            Budget: ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()} • Duration: {project.duration}
+                            Budget: ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()} • Duration: {project.duration}
                           </div>
                         </div>
                       ))}

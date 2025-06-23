@@ -98,9 +98,9 @@ const ContactSupport = () => {
                 <p className="text-gray-600 mb-4">
                   Available Mon-Fri, 9am-5pm
                 </p>
-                <a href="tel:+15551234567" className="text-blue-600 hover:text-blue-800">
+                {/* <a href="tel:+15551234567" className="text-blue-600 hover:text-blue-800">
                   +1 (555) 123-4567
-                </a>
+                </a> */}
               </CardContent>
             </Card>
 

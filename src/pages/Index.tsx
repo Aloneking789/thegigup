@@ -459,7 +459,7 @@ const Index = () => {
                         {freelancer.profile.location || "Remote"}
                       </span>
                     </div><div className="text-center pt-2">
-                      <div className="text-lg font-bold text-blue-600">₹{freelancer.hourlyRate}/hr</div>
+                      <div className="text-lg font-bold text-blue-600">${freelancer.hourlyRate}/hr</div>
                       <Link to={generatePublicProfileUrl(freelancer.profile.name, freelancer.id)}>
                         <Button size="sm" className="w-full mt-2 bg-blue-600 hover:bg-blue-700">
                           View Profile
@@ -525,7 +525,7 @@ const Index = () => {
                     <div className="flex justify-between items-start mb-2">
                       <CardTitle className="text-xl">{project.title}</CardTitle>
                       <Badge variant="outline" className="text-blue-600 border-blue-200">
-                        ₹{project.budget.min} - ₹{project.budget.max}
+                        ${project.budget.min} - ${project.budget.max}
                       </Badge>
                     </div>
                     <CardDescription className="text-gray-600 line-clamp-3">{project.description}</CardDescription>

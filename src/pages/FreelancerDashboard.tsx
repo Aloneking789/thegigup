@@ -47,7 +47,7 @@ const mockJobs = [
     title: "React Frontend Developer",
     company: "TechStart Solutions",
     location: "Remote",
-    budget: "₹50,000 - ₹75,000",
+    budget: "$50,000 - $75,000",
     type: "Fixed Price",
     description: "Looking for an experienced React developer to build a modern web application with TypeScript...",
     skills: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
@@ -62,7 +62,7 @@ const mockJobs = [
     title: "UI/UX Designer for Mobile App",
     company: "Creative Agency",
     location: "Mumbai, India",
-    budget: "₹1,200/hour",
+    budget: "$1,200/hour",
     type: "Hourly",
     description: "Need a creative designer to design user interface for a mobile application in fintech domain...",
     skills: ["Figma", "UI Design", "Mobile Design", "Prototyping"],
@@ -77,7 +77,7 @@ const mockJobs = [
     title: "Full Stack Developer",
     company: "E-commerce Startup",
     location: "Bangalore, India",
-    budget: "₹80,000 - ₹120,000",
+    budget: "$80,000 - $120,000",
     type: "Fixed Price",
     description: "Build a complete e-commerce platform with modern tech stack including payment integration...",
     skills: ["React", "Node.js", "MongoDB", "Stripe"],
@@ -664,7 +664,7 @@ const FreelancerDashboard = () => {
                                 <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
                                   <div className="flex items-center">
                                     <DollarSign className="w-4 h-4 mr-1 text-green-600" />                                    <span className="font-semibold text-gray-900 text-sm sm:text-base">
-                                      ₹{project.budget.min.toLocaleString()} - ₹{project.budget.max.toLocaleString()}
+                                      ${project.budget.min.toLocaleString()} - ${project.budget.max.toLocaleString()}
                                     </span>
                                     <span className="text-gray-500 ml-1 text-sm">({project.duration})</span>
                                   </div>                                  <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
@@ -777,7 +777,7 @@ const FreelancerDashboard = () => {
                             </div>
                             <div className="text-left sm:text-right">
                               <div className="text-lg font-semibold text-gray-900">
-                                ₹{project.budgetMin.toLocaleString()} - ₹{project.budgetMax.toLocaleString()}
+                                ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
                               </div>
                               <div className="text-sm text-gray-600">{project.duration}</div>
                             </div>
@@ -881,7 +881,7 @@ const FreelancerDashboard = () => {
                               </div>
                               <div className="flex items-center">
                                 <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                                <span>Budget: ₹{application.project.budgetMin.toLocaleString()} - ₹{application.project.budgetMax.toLocaleString()}</span>
+                                <span>Budget: ${application.project.budgetMin.toLocaleString()} - ${application.project.budgetMax.toLocaleString()}</span>
                               </div>
                             </div>                            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3">{application.proposal}</p>
                             
