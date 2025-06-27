@@ -138,15 +138,15 @@ const About = () => {
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">50K+</div>
+            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">1K+</div>
             <div className="text-gray-600">Active Freelancers</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">25K+</div>
+            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">250+</div>
             <div className="text-gray-600">Happy Clients</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">100K+</div>
+            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">500+</div>
             <div className="text-gray-600">Projects Completed</div>
           </div>
           <div className="text-center">
