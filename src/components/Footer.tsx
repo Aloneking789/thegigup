@@ -19,11 +19,11 @@ const Footer = ({ className = "" }: FooterProps) => {
     const checkAuthAndFetchProfile = async () => {
       const loggedIn = isLoggedIn();
       setUserLoggedIn(loggedIn);
-      
+
       if (loggedIn) {
         const role = localStorage.getItem('role') as 'FREELANCER' | 'CLIENT' | null;
         setUserRole(role);
-        
+
         // Fetch user profile data
         try {
           let response;
@@ -32,7 +32,7 @@ const Footer = ({ className = "" }: FooterProps) => {
           } else if (role === 'CLIENT') {
             response = await clientService.getProfile();
           }
-          
+
           if (response?.success) {
             setUserProfile(response.data);
           }
@@ -41,7 +41,7 @@ const Footer = ({ className = "" }: FooterProps) => {
         }
       }
     };
-    
+
     checkAuthAndFetchProfile();
   }, []);
 
@@ -245,7 +245,7 @@ const Footer = ({ className = "" }: FooterProps) => {
             <ul className="space-y-2 text-gray-400">
               <li>
                 <Link to="/terms" className="hover:text-white transition-colors">
-                  Terms
+                  Terms and Conditions
                 </Link>
               </li>
               <li>
@@ -265,7 +265,7 @@ const Footer = ({ className = "" }: FooterProps) => {
               </li> */}
               {userLoggedIn && (
                 <li>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="hover:text-white transition-colors text-left"
                   >

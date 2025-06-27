@@ -1,13 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Clock, 
-  DollarSign, 
-  Eye, 
+import {
+  Search,
+  Filter,
+  MapPin,
+  Clock,
+  DollarSign,
+  Eye,
   Send,
   Briefcase,
   Settings,
@@ -26,6 +25,7 @@ import { publicService } from "@/lib/api/client";
 import { PublicJob } from "@/lib/api/types";
 import { useToast } from "@/hooks/use-toast";
 import { logout, isLoggedIn, RoleStorage } from "@/lib/config/api";
+import SEO from "@/components/SEO";
 
 const FindWork = () => {
   const location = useLocation();
@@ -47,12 +47,12 @@ const FindWork = () => {
     email: string;
     profileImage?: string;
   } | null>(null);
-  
+
   // API state
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalResults, setTotalResults] = useState(0);  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0); const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   // Debounce search term
@@ -60,17 +60,18 @@ const FindWork = () => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 500);
-    return () => clearTimeout(timer);  }, [searchTerm]);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Initialize user state
   useEffect(() => {
     const loggedIn = isLoggedIn();
     setUserLoggedIn(loggedIn);
-    
+
     if (loggedIn) {
       const role = RoleStorage.getRole();
       setUserRole(role as 'CLIENT' | 'FREELANCER');
-      
+
       // Get user profile data from localStorage or set default
       const storedUserName = localStorage.getItem('userName') || 'User';
       const storedUserEmail = localStorage.getItem('userEmail') || '';
@@ -102,7 +103,7 @@ const FindWork = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const params = {
         page: currentPage,
         limit: 12,
@@ -111,7 +112,7 @@ const FindWork = () => {
       };
 
       const response = await publicService.getJobs(params);
-      
+
       if (response.success) {
         setJobs(response.data.jobs);
         setTotalResults(response.data.pagination.total);
@@ -135,13 +136,13 @@ const FindWork = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-    
+
     const diffInWeeks = Math.floor(diffInDays / 7);
     return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
   };
@@ -164,48 +165,57 @@ const FindWork = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* SEO Meta Tags */}
+      <SEO
+        title="Find Freelance Jobs & Projects - TheGigUp"
+        description="Browse thousands of freelance jobs on TheGigUp. Find projects in web development, design, writing, marketing and more. Start earning today."
+        keywords="freelance jobs, find work, remote jobs, gig work, freelance projects, TheGigUp jobs"
+        url="https://www.thegigup.com/find-work"
+      />
+
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Briefcase className="w-5 h-5 text-white" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <Link to="/" className="text-xl font-bold text-gray-900">TheGigUp</Link>
-            </div>            <nav className="hidden md:flex items-center space-x-6">
+              <Link to="/" className="text-lg sm:text-xl font-bold text-gray-900">TheGigUp</Link>
+            </div>
+
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/find-work" className="text-blue-600 font-medium">Find Work</Link>
               <Link to="/about" className="text-gray-600 hover:text-blue-600">About</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="border-red-300 text-red-600 hover:bg-red-50 text-xs sm:text-sm px-2 sm:px-3"
               >
                 Logout
               </Button>
             </nav>
-            <MobileNav 
+            <MobileNav
               userLoggedIn={userLoggedIn}
               userRole={userRole}
               userProfile={userProfile}
             />
           </div>
-        </div>
-      </header>
+        </div>      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Work</h1>
-          <p className="text-gray-600">Discover opportunities that match your skills</p>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Find Work</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Discover opportunities that match your skills</p>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
+        <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="relative sm:col-span-2 lg:col-span-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Search jobs..."
@@ -236,24 +246,23 @@ const FindWork = () => {
                 <SelectItem value="proposals">Fewest Proposals</SelectItem>
               </SelectContent>
             </Select>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-sm">
               <Filter className="w-4 h-4 mr-2" />
               Apply Filters
-            </Button>          </div>
-        </div>
-
-        {/* Results Summary */}
+            </Button>
+          </div>
+        </div>        {/* Results Summary */}
         {!isLoading && !error && (
-          <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+          <div className="bg-white rounded-lg shadow-sm border p-3 sm:p-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="text-xs sm:text-sm text-gray-600">
                 {totalResults > 0 ? (
                   <>
                     Showing <span className="font-medium">{((currentPage - 1) * 12) + 1}</span> to{' '}
                     <span className="font-medium">{Math.min(currentPage * 12, totalResults)}</span> of{' '}
                     <span className="font-medium">{totalResults.toLocaleString()}</span> jobs
                     {debouncedSearchTerm && (
-                      <span> for "<span className="font-medium">{debouncedSearchTerm}</span>"</span>
+                      <span className="block sm:inline sm:ml-1"> for "<span className="font-medium">{debouncedSearchTerm}</span>"</span>
                     )}
                   </>
                 ) : (
@@ -261,7 +270,7 @@ const FindWork = () => {
                 )}
               </div>
               {totalResults > 0 && (
-                <div className="text-sm text-gray-500">
+                <div className="text-xs sm:text-sm text-gray-500">
                   Page {currentPage} of {Math.ceil(totalResults / 12)}
                 </div>
               )}
@@ -284,8 +293,8 @@ const FindWork = () => {
             <Card className="bg-red-50 border-red-200">
               <CardContent className="p-6 text-center">
                 <p className="text-red-600">{error}</p>
-                <Button 
-                  onClick={fetchJobs} 
+                <Button
+                  onClick={fetchJobs}
                   className="mt-4"
                   variant="outline"
                 >
@@ -302,27 +311,25 @@ const FindWork = () => {
                 <p className="text-gray-600">No jobs found matching your criteria.</p>
               </CardContent>
             </Card>
-          )}
-
-          {/* Job Cards */}
+          )}          {/* Job Cards */}
           {!isLoading && !error && jobs.map((job) => (
             <Card key={job.id} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="space-y-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {/* Header */}
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 break-words">{job.title}</h3>
                       </div>
-                      <div className="flex items-center text-gray-600 text-sm space-x-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 text-xs sm:text-sm space-y-1 sm:space-y-0 sm:space-x-4">
                         <span className="font-medium">{job.client.company}</span>
                         <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          <span>{job.client.location}</span>
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="truncate">{job.client.location}</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                           <span>{formatTimeAgo(job.postedAt)}</span>
                         </div>
                       </div>
@@ -330,31 +337,33 @@ const FindWork = () => {
                   </div>
 
                   {/* Budget and Info */}
-                  <div className="flex items-center space-x-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 mr-1 text-green-600" />
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 text-sm sm:text-base">
                         ${job.budget.min.toLocaleString()} - ${job.budget.max.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
-                      <span>Client rating: {job.client.ratings.toFixed(1)}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="w-4 h-4 mr-1" />
-                      <span>{job.applicationsCount} proposal{job.applicationsCount !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Duration: {job.duration}
+                    <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 gap-3 sm:gap-4">
+                      <div className="flex items-center">
+                        <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-yellow-400 fill-current" />
+                        <span>Client rating: {job.client.ratings.toFixed(1)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span>{job.applicationsCount} proposal{job.applicationsCount !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-600">
+                        Duration: {job.duration}
+                      </div>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-gray-600 line-clamp-3">{job.description}</p>
+                  <p className="text-gray-600 line-clamp-3 text-sm sm:text-base leading-relaxed">{job.description}</p>
 
                   {/* Skills */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {job.skillsRequired.map((skill) => (
                       <Badge key={skill} variant="secondary" className="text-xs">
                         {skill}
@@ -363,9 +372,9 @@ const FindWork = () => {
                   </div>
 
                   {/* About Client */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">About the Client</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
+                  <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                    <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">About the Client</h4>
+                    <div className="text-xs sm:text-sm text-gray-600 space-y-1">
                       <p><span className="font-medium">Company:</span> {job.client.company}</p>
                       <p><span className="font-medium">Industry:</span> {job.client.industry}</p>
                       <p><span className="font-medium">Location:</span> {job.client.location}</p>
@@ -373,18 +382,19 @@ const FindWork = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-gray-200"
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 gap-3 sm:gap-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-200 w-full sm:w-auto"
                       onClick={() => handleViewDetails(job)}
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View Details
                     </Button>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700"
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                      size="sm"
                       onClick={() => handleSendProposal(job)}
                     >
                       <Send className="w-4 h-4 mr-2" />
@@ -393,12 +403,11 @@ const FindWork = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>          ))}
-
-          {/* Pagination */}
+            </Card>
+          ))}          {/* Pagination */}
           {!isLoading && !error && jobs.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 p-6 bg-white rounded-lg border">
-              <div className="text-sm text-gray-600 mb-4 sm:mb-0">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-lg border gap-4">
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 Showing {jobs.length} of {totalResults.toLocaleString()} jobs
               </div>
               <div className="flex items-center space-x-2">
@@ -407,10 +416,12 @@ const FindWork = () => {
                   size="sm"
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </Button>
-                <span className="text-sm text-gray-600 px-3">
+                <span className="text-xs sm:text-sm text-gray-600 px-2 sm:px-3">
                   Page {currentPage}
                 </span>
                 <Button
@@ -418,6 +429,7 @@ const FindWork = () => {
                   size="sm"
                   onClick={() => setCurrentPage(prev => prev + 1)}
                   disabled={jobs.length < 12}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
                   Next
                 </Button>

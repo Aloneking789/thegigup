@@ -14,17 +14,47 @@ import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
 import JobDetailModal from "@/components/JobDetailModal";
 import MobileNav from "@/components/MobileNav";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
+
+// Structured Data Component for SEO
+const StructuredData = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TheGigUp",
+    "description": "TheGigUp is the premier freelance marketplace connecting clients with skilled freelancers. Find talent, post jobs, and work from anywhere.",
+    "url": "https://www.thegigup.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.thegigup.com/find-talent?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "sameAs": [
+      "https://www.thegigup.com"
+    ]
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
+  );
+};
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [featuredFreelancers, setFeaturedFreelancers] = useState<FeaturedFreelancer[]>([]);
   const [featuredProjects, setFeaturedProjects] = useState<FeaturedProject[]>([]);
-  const [isLoadingFreelancers, setIsLoadingFreelancers] = useState(true);  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [isLoadingFreelancers, setIsLoadingFreelancers] = useState(true); const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userRole, setUserRole] = useState<'FREELANCER' | 'CLIENT' | null>(null);
   const [selectedProject, setSelectedProject] = useState<FeaturedProject | null>(null);
-  const [isJobModalOpen, setIsJobModalOpen] = useState(false);  const navigate = useNavigate();
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false); const navigate = useNavigate();
 
   // Search functionality
   const handleSearch = () => {
@@ -48,11 +78,11 @@ const Index = () => {
     const checkAuthAndFetchProfile = async () => {
       const loggedIn = isLoggedIn();
       setUserLoggedIn(loggedIn);
-      
+
       if (loggedIn) {
         const role = localStorage.getItem('role') as 'FREELANCER' | 'CLIENT' | null;
         setUserRole(role);
-        
+
         // Fetch user profile data
         try {
           let response;
@@ -61,7 +91,7 @@ const Index = () => {
           } else if (role === 'CLIENT') {
             response = await clientService.getProfile();
           }
-          
+
           if (response?.success) {
             setUserProfile(response.data);
           }
@@ -70,7 +100,7 @@ const Index = () => {
         }
       }
     };
-    
+
     checkAuthAndFetchProfile();
   }, []);
   // Get appropriate dashboard route based on user role
@@ -130,11 +160,17 @@ const Index = () => {
       } finally {
         setIsLoadingProjects(false);
       }
-    };    fetchFeaturedProjects();
+    }; fetchFeaturedProjects();
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* SEO Meta Tags */}
+      <SEO />
+
+      {/* Structured Data */}
+      <StructuredData />
+
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
@@ -172,7 +208,7 @@ const Index = () => {
                   )}                  <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
                     About
                   </Link>
-                  
+
                   {/* User Profile Avatar */}
                   <Link to="/profile" className="flex items-center space-x-2">
                     <Avatar className="w-8 h-8 border-2 border-blue-600">
@@ -185,10 +221,10 @@ const Index = () => {
                       {userProfile?.name || 'Profile'}
                     </span>
                   </Link>
-                  
+
                   {/* Logout Button */}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleLogout}
                     className="border-red-300 text-red-600 hover:bg-red-50"
@@ -216,8 +252,8 @@ const Index = () => {
                   </Link>                </>
               )}
             </nav>
-              {/* Mobile Navigation */}
-            <MobileNav 
+            {/* Mobile Navigation */}
+            <MobileNav
               userLoggedIn={userLoggedIn}
               userRole={userRole}
               userProfile={userProfile}
@@ -231,143 +267,146 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">            <div className="space-y-8">
-              <div className="space-y-4">
-                {userLoggedIn ? (
-                  // Personalized content for logged-in users
-                  <>
-                    <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-                      Welcome back,
-                      <span className="text-blue-600"> {userProfile?.name?.split(' ')[0] || 'User'}</span>!
-                    </h1>
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                      {userRole === 'CLIENT' 
-                        ? "Ready to find the perfect freelancer for your next project? Browse our talented community."
-                        : "Discover exciting projects that match your skills and start earning today."
-                      }
-                    </p>
-                  </>
-                ) : (
-                  // Default content for guests
-                  <>
-                    <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-                      Find the perfect
-                      <span className="text-blue-600"> freelancer</span> for your project
-                    </h1>
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                      Connect with skilled professionals and get your work done efficiently. From web development to design,
-                      find experts for every project.
-                    </p>
-                  </>
-                )}
-              </div>              {/* Search Bar and Actions */}
-              <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <Input
-                    placeholder="Search for skills (e.g., React, Python, Design...)"
-                    className="pl-10 h-12 text-lg border-gray-200 focus:border-blue-500"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                  />
-                  {searchQuery.trim() && (
-                    <Button
-                      onClick={handleSearch}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 px-3"
-                      size="sm"
-                    >
-                      Search
-                    </Button>
-                  )}
-                </div>
+            <div className="space-y-4">
+              {userLoggedIn ? (
+                // Personalized content for logged-in users
+                <>
+                  <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
+                    Welcome back,
+                    <span className="text-blue-600"> {userProfile?.name?.split(' ')[0] || 'User'}</span>!
+                  </h1>
+                  <p className="text-xl text-gray-600 leading-relaxed">
+                    {userRole === 'CLIENT'
+                      ? "Ready to find the perfect freelancer for your next project? Browse our talented community on TheGigUp."
+                      : "Discover exciting projects that match your skills and start earning today on TheGigUp freelance marketplace."
+                    }
+                  </p>
+                </>
+              ) : (
+                // Default content for guests
+                <>
+                  <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
+                  
+                    Find the perfect <span className="text-blue-600">freelancer</span> for your project
+                  </h1>
+                  <p className="text-xl text-gray-600 leading-relaxed">
+                    TheGigUp is the premier freelance marketplace connecting clients with skilled professionals.
+                    From web development to design, find experts for every project and work from anywhere.
+                  </p>
+                </>
+              )}
+            </div>              {/* Search Bar and Actions */}
+            <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">                <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Search for skills (e.g., React, Python, Design...)"
+                className="pl-10 h-12 text-lg border-gray-200 focus:border-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              {searchQuery.trim() && (
+                <Button
+                  onClick={handleSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 px-3"
+                  size="sm"
+                >
+                  Search
+                </Button>
+              )}
+            </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userLoggedIn ? (
-                    // Logged-in user actions
-                    userRole === 'CLIENT' ? (
-                      <>
-                        <Link to="/find-talent">
-                          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
-                            <Users className="w-5 h-5 mr-2" />
-                            Find Talent
-                          </Button>
-                        </Link>
-                        <Link to="/post-job">
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
-                          >
-                            <Briefcase className="w-5 h-5 mr-2" />
-                            Post a Job
-                          </Button>
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <Link to="/find-work">
-                          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
-                            <Briefcase className="w-5 h-5 mr-2" />
-                            Find Work
-                          </Button>
-                        </Link>
-                        <Link to="/profile">
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
-                          >
-                            <Users className="w-5 h-5 mr-2" />
-                            View Profile
-                          </Button>
-                        </Link>
-                      </>
-                    )
-                  ) : (
-                    // Guest user actions
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {userLoggedIn ? (
+                  // Logged-in user actions
+                  userRole === 'CLIENT' ? (
                     <>
-                      <Link to="/signup?type=client">
+                      <Link to="/find-talent">
                         <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
                           <Users className="w-5 h-5 mr-2" />
-                          I'm a Client
+                          Find Talent
                         </Button>
                       </Link>
-                      <Link to="/signup?type=freelancer">
+                      <Link to="/post-job">
                         <Button
                           size="lg"
                           variant="outline"
                           className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
                         >
                           <Briefcase className="w-5 h-5 mr-2" />
-                          I'm a Freelancer
+                          Post a Job
                         </Button>
                       </Link>
                     </>
-                  )}
-                </div>
+                  ) : (
+                    <>
+                      <Link to="/find-work">
+                        <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
+                          <Briefcase className="w-5 h-5 mr-2" />
+                          Find Work
+                        </Button>
+                      </Link>
+                      <Link to="/profile">
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
+                        >
+                          <Users className="w-5 h-5 mr-2" />
+                          View Profile
+                        </Button>
+                      </Link>
+                    </>
+                  )
+                ) : (
+                  // Guest user actions
+                  <>
+                    <Link to="/signup?type=client">
+                      <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14 text-lg font-semibold w-full">
+                        <Users className="w-5 h-5 mr-2" />
+                        I'm a Client
+                      </Button>
+                    </Link>
+                    <Link to="/signup?type=freelancer">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="border-blue-600 text-blue-600 hover:bg-blue-50 h-14 text-lg font-semibold w-full"
+                      >
+                        <Briefcase className="w-5 h-5 mr-2" />
+                        I'm a Freelancer
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
+            </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">10K+</div>
-                  <div className="text-gray-600">Active Freelancers</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">5K+</div>
-                  <div className="text-gray-600">Projects Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">98%</div>
-                  <div className="text-gray-600">Client Satisfaction</div>
-                </div>
+            {/* Stats with Schema.org markup */}
+            <div className="grid grid-cols-3 gap-6 pt-8" itemScope itemType="https://schema.org/Organization">
+              <meta itemProp="name" content="TheGigUp" />
+              <meta itemProp="url" content="https://www.thegigup.com" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900" itemProp="numberOfEmployees">1K+</div>
+                <div className="text-gray-600">Active Freelancers on TheGigUp</div>
               </div>
-            </div>            <div className="relative">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">500+</div>
+                <div className="text-gray-600">Projects Completed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">98%</div>
+                <div className="text-gray-600">Client Satisfaction</div>
+              </div>
+            </div>
+          </div>            <div className="relative">
               <div className="relative z-10">
                 <img
                   src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
-                  alt="Team collaborating on freelance projects"
+                  alt="TheGigUp freelance marketplace - Team collaborating on remote freelance projects, showcasing professional freelancers working together"
                   className="rounded-2xl shadow-2xl w-full h-auto"
+                  loading="eager"
                 />
               </div>
               <div className="absolute -top-4 -right-4 w-72 h-72 bg-blue-200 rounded-full opacity-20"></div>
@@ -381,9 +420,9 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Top Freelancers Ready to Work</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Top Freelancers Ready to Work on TheGigUp</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Browse through our curated list of skilled professionals and find the perfect match for your project
+              Browse through our curated list of skilled professionals and find the perfect match for your project on TheGigUp marketplace
             </p>
           </div>          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {isLoadingFreelancers ? (
@@ -427,8 +466,8 @@ const Index = () => {
                       </AvatarFallback>
                     </Avatar>                    <CardTitle className="text-lg">{freelancer.profile.name}</CardTitle>
                     <CardDescription className="text-blue-600 font-medium">
-                      {freelancer.profile.bio && freelancer.profile.bio.length > 20 
-                        ? `${freelancer.profile.bio.substring(0, 20)}...` 
+                      {freelancer.profile.bio && freelancer.profile.bio.length > 20
+                        ? `${freelancer.profile.bio.substring(0, 20)}...`
                         : freelancer.profile.bio || 'No bio available'}
                     </CardDescription>
                   </CardHeader>                  <CardContent className="space-y-4">
@@ -483,9 +522,9 @@ const Index = () => {
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Featured Projects</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Featured Projects on TheGigUp</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover amazing project opportunities from verified clients. Start your freelancing journey today.
+              Discover amazing project opportunities from verified clients on TheGigUp. Start your freelancing journey today.
             </p>
           </div>
 
@@ -576,8 +615,8 @@ const Index = () => {
                     </div>                    {/* Role-based button display */}
                     {userRole === 'CLIENT' ? (
                       // Clients see project details, not apply button
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 mt-4"
                         onClick={() => handleViewProjectDetails(project)}
                       >
@@ -615,14 +654,14 @@ const Index = () => {
                   {userRole === 'CLIENT' ? 'Ready to hire?' : 'Ready to work?'}
                 </h2>
                 <p className="text-xl text-blue-100">
-                  {userRole === 'CLIENT' 
+                  {userRole === 'CLIENT'
                     ? 'Browse our talented freelancers and start your next project today'
                     : 'Explore exciting projects and showcase your skills to potential clients'
                   }
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="bg-white text-blue-600 hover:bg-gray-100 h-14 px-8 text-lg font-semibold"
                     onClick={() => navigate(userRole === 'CLIENT' ? "/find-talent" : "/find-work")}
                   >
@@ -646,8 +685,8 @@ const Index = () => {
                   Join thousands of clients and freelancers who trust TheGigUp for their projects
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="bg-white text-blue-600 hover:bg-gray-100 h-14 px-8 text-lg font-semibold"
                     onClick={() => navigate("/signup?type=client")}
                   >

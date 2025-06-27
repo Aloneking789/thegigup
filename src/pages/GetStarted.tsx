@@ -123,7 +123,7 @@ const GetStarted = () => {
               <Button size="lg" variant="secondary">
                 Create Your Profile
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+              <Button size="lg" variant="outline" className="border-white text-blue-600 hover:bg-white hover:text-blue-600">
                 Browse Available Jobs
               </Button>
             </div>

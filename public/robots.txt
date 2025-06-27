@@ -1,14 +1,63 @@
+# Robots.txt for TheGigUp - Freelance Marketplace
+# Website: https://www.thegigup.com
+
+User-agent: *
+Allow: /
+Crawl-delay: 1
+
+# Allow all major search engines (explicit rules)
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Allow social media crawlers for better sharing
+User-agent: facebookexternalhit
 Allow: /
 
 User-agent: Twitterbot
 Allow: /
 
-User-agent: facebookexternalhit
+User-agent: LinkedInBot
 Allow: /
 
-User-agent: *
+User-agent: WhatsApp
 Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+# Disallow sensitive or duplicate content areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /.env
+Disallow: /config/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /*.json$
+Disallow: /*?print=
+Disallow: /*?utm_
+
+# Allow crawling of important pages explicitly
+Allow: /find-talent
+Allow: /find-work
+Allow: /about
+Allow: /signup
+Allow: /login
+Allow: /terms
+Allow: /privacy
+Allow: /sitemap
+
+# Sitemap location
+Sitemap: https://www.thegigup.com/sitemap.xml
+
+# Additional SEO directives
+# Request-rate: 1/10s (1 request per 10 seconds)
+# Visit-time: 0400-0800 (preferred crawl time in UTC)

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'https://api.thegigup.com/api/v1',
+  BASE_URL: 'https://fb8ng6th-5000.inc1.devtunnels.ms/api/v1',
   ENDPOINTS: {   
         EMAIL: {
       SEND_VERIFICATION_OTP: '/email/send-verification-otp',

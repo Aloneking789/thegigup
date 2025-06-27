@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
-  Star, 
-  MapPin, 
+import {
+  Search,
+  Filter,
+  Star,
+  MapPin,
   MessageSquare,
   Briefcase,
   Users,
@@ -35,6 +35,7 @@ import { ClientFreelancer } from "@/lib/api/types";
 import { generatePublicProfileUrl } from "@/lib/utils/profileUrl";
 import { logout, isLoggedIn, RoleStorage } from "@/lib/config/api";
 import { useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const FindTalent = () => {
   const [selectedFreelancer, setSelectedFreelancer] = useState<ClientFreelancer | null>(null);
@@ -42,11 +43,11 @@ const FindTalent = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   // API state
   const [freelancers, setFreelancers] = useState<ClientFreelancer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);  const [pagination, setPagination] = useState({
+  const [error, setError] = useState<string | null>(null); const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0,
@@ -61,7 +62,7 @@ const FindTalent = () => {
     email: string;
     profileImage?: string;
   } | null>(null);
-    // Search and filters state
+  // Search and filters state
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
@@ -85,17 +86,18 @@ const FindTalent = () => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
     }, 500);
-    return () => clearTimeout(timer);  }, [searchQuery]);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Initialize user state
   useEffect(() => {
     const loggedIn = isLoggedIn();
     setUserLoggedIn(loggedIn);
-    
+
     if (loggedIn) {
       const role = RoleStorage.getRole();
       setUserRole(role as 'CLIENT' | 'FREELANCER');
-      
+
       // Get user profile data from localStorage or set default
       const storedUserName = localStorage.getItem('userName') || 'User';
       const storedUserEmail = localStorage.getItem('userEmail') || '';
@@ -104,7 +106,8 @@ const FindTalent = () => {
         email: storedUserEmail,
         profileImage: undefined
       });
-    }  }, []);
+    }
+  }, []);
 
   // Handle URL search parameter
   useEffect(() => {
@@ -117,7 +120,7 @@ const FindTalent = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await clientService.getFreelancers({
         page: pagination.page,
         limit: pagination.limit,
@@ -128,32 +131,32 @@ const FindTalent = () => {
         maxRate: filters.maxRate < 5000 ? filters.maxRate : undefined,
         experienceLevel: filters.experienceLevel || undefined,
         availability: filters.availability || undefined,
-      });      if (response.success) {
+      }); if (response.success) {
         let allFreelancers = [...response.data.freelancers];
-        
+
         // Apply client-side search filtering if there's a search query
         if (debouncedQuery.trim()) {
           allFreelancers = allFreelancers.filter(freelancer => {
             const query = debouncedQuery.toLowerCase();
-            
+
             // Search in name
             const nameMatch = freelancer.user.name.toLowerCase().includes(query);
-            
+
             // Search in skills
-            const skillsMatch = freelancer.skills.some(skill => 
+            const skillsMatch = freelancer.skills.some(skill =>
               skill.toLowerCase().includes(query)
             );
-            
+
             // Search in experience level
             const experienceMatch = freelancer.experience?.toLowerCase().includes(query);
-            
+
             // Search in bio/description if available
             const bioMatch = freelancer.bio?.toLowerCase().includes(query);
-            
+
             return nameMatch || skillsMatch || experienceMatch || bioMatch;
           });
         }
-          // Apply sorting
+        // Apply sorting
         switch (sortBy) {
           case 'rating-high':
             allFreelancers.sort((a, b) => (b.ratings || 0) - (a.ratings || 0));
@@ -176,30 +179,30 @@ const FindTalent = () => {
             if (debouncedQuery.trim()) {
               allFreelancers.sort((a, b) => {
                 const query = debouncedQuery.toLowerCase();
-                
+
                 // Exact name matches first
                 const aNameExact = a.user.name.toLowerCase() === query ? 2 : 0;
                 const bNameExact = b.user.name.toLowerCase() === query ? 2 : 0;
-                
+
                 // Partial name matches second
                 const aNamePartial = a.user.name.toLowerCase().includes(query) ? 1 : 0;
                 const bNamePartial = b.user.name.toLowerCase().includes(query) ? 1 : 0;
-                
+
                 // Skill matches
                 const aSkillMatch = a.skills.some(skill => skill.toLowerCase().includes(query)) ? 1 : 0;
                 const bSkillMatch = b.skills.some(skill => skill.toLowerCase().includes(query)) ? 1 : 0;
-                
+
                 const aScore = aNameExact + aNamePartial + aSkillMatch;
                 const bScore = bNameExact + bNamePartial + bSkillMatch;
-                
+
                 return bScore - aScore;
               });
             }
             break;
         }
-        
+
         setFreelancers(allFreelancers);
-        
+
         // Update pagination to reflect filtered results
         if (debouncedQuery.trim() && allFreelancers.length !== response.data.freelancers.length) {
           setPagination({
@@ -240,22 +243,22 @@ const FindTalent = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    
+
     return date.toLocaleDateString();
   };
 
   // Helper function to highlight search terms
   const highlightSearchTerm = (text: string, searchTerm: string) => {
     if (!searchTerm.trim()) return text;
-    
+
     const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
-    
+
     return parts.map((part, index) =>
       regex.test(part) ? (
         <span key={index} className="bg-yellow-200 px-1 rounded font-medium">
@@ -293,22 +296,29 @@ const FindTalent = () => {
     setSearchQuery("");
   };
 
-  const activeFiltersCount = filters.skills.length + 
-    (filters.location ? 1 : 0) + 
+  const activeFiltersCount = filters.skills.length +
+    (filters.location ? 1 : 0) +
     (filters.experienceLevel ? 1 : 0) +
     (filters.minRating > 0 ? 1 : 0) +
     (filters.maxRate < 5000 ? 1 : 0);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      {/* SEO Meta Tags */}
+      <SEO
+        title="Find Talented Freelancers - TheGigUp Marketplace"
+        description="Discover skilled freelancers on TheGigUp. Hire experts in web development, design, writing, marketing and more. Browse profiles, reviews and portfolios."
+        keywords="hire freelancers, find talent, freelancer marketplace, web developers, designers, writers, TheGigUp"
+        url="https://www.thegigup.com/find-talent"
+      />
+
+      {/* Header */}      <header className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center py-3 sm:py-4">
+            <Link to="/" className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               TheGigUp
             </Link>
-            
-            <nav className="hidden md:flex space-x-8">
+
+            <nav className="hidden md:flex space-x-6 lg:space-x-8">
               <Link to="/client-dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Dashboard
               </Link>
@@ -318,83 +328,77 @@ const FindTalent = () => {
               <Link to="/post-job" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Post Job
               </Link>
-            </nav>            <div className="flex items-center space-x-3">
-              {/* <Button variant="ghost" size="icon" className="relative">
-                <MessageSquare className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs text-white">3</span>
-                </div>
-              </Button> */}
-              <Avatar className="h-8 w-8 ring-2 ring-blue-100">
-                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">CL</AvatarFallback>
+            </nav>
+
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8 ring-2 ring-blue-100">
+                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm">CL</AvatarFallback>
               </Avatar>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleLogout}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="border-red-300 text-red-600 hover:bg-red-50 text-xs sm:text-sm px-2 sm:px-3"
               >
                 Logout
               </Button>
             </div>
-          </div>        </div>
-        <MobileNav 
+          </div></div>
+        <MobileNav
           userLoggedIn={userLoggedIn}
           userRole={userRole}
           userProfile={userProfile}
-        />
-      </header>
+        />      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent mb-3 sm:mb-4">
             Find Top Talent
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
             Connect with skilled freelancers who can bring your projects to life
-          </p>
-            {/* Search Section */}
-          <div className="max-w-3xl mx-auto">
+          </p>            {/* Search Section */}
+          <div className="max-w-3xl mx-auto px-3 sm:px-4">
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
                 <Input
                   placeholder="Search for skills, titles, or keywords..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-14 text-lg bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-300 focus:ring-blue-200"
+                  className="pl-10 sm:pl-12 h-12 sm:h-14 text-base sm:text-lg bg-white/80 backdrop-blur-sm border-gray-200 focus:border-blue-300 focus:ring-blue-200"
                 />
               </div>
             </div>
 
             {/* Active Filters */}
             {activeFiltersCount > 0 && (
-              <div className="flex flex-wrap items-center gap-2 justify-center">
+              <div className="flex flex-wrap items-center gap-2 justify-center px-2">
                 <span className="text-sm text-gray-600">Active filters:</span>
                 {filters.skills.map(skill => (
-                  <Badge 
-                    key={skill} 
-                    variant="secondary" 
-                    className="cursor-pointer hover:bg-red-100 transition-colors" 
+                  <Badge
+                    key={skill}
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-red-100 transition-colors text-xs sm:text-sm"
                     onClick={() => handleSkillToggle(skill)}
                   >
                     {skill} <X className="h-3 w-3 ml-1" />
                   </Badge>
                 ))}
                 {filters.location && (
-                  <Badge 
-                    variant="secondary" 
-                    className="cursor-pointer hover:bg-red-100 transition-colors" 
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-red-100 transition-colors text-xs sm:text-sm"
                     onClick={() => setFilters(prev => ({ ...prev, location: "" }))}
                   >
                     📍 {filters.location} <X className="h-3 w-3 ml-1" />
                   </Badge>
                 )}
                 {filters.experienceLevel && (
-                  <Badge 
-                    variant="secondary" 
-                    className="cursor-pointer hover:bg-red-100 transition-colors" 
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-red-100 transition-colors text-xs sm:text-sm"
                     onClick={() => setFilters(prev => ({ ...prev, experienceLevel: "" }))}
                   >
                     {filters.experienceLevel} <X className="h-3 w-3 ml-1" />
@@ -405,15 +409,14 @@ const FindTalent = () => {
                 </Button>
               </div>
             )}
-          </div>
-        </div>
+          </div>        </div>
 
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Enhanced Filters Sidebar */}
           {showFilters && (
-            <div className="w-80 flex-shrink-0">
+            <div className="w-full lg:w-80 flex-shrink-0">
               <Card className="sticky top-24 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg">
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold flex items-center">
                       <Filter className="h-5 w-5 mr-2 text-blue-600" />
@@ -527,14 +530,13 @@ const FindTalent = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
-
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Results Header */}            <div className="flex justify-between items-center mb-6">
+          )}          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Results Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                     {isLoading ? "Searching..." : `${pagination.total} talented freelancers`}
                   </h2>
                   {debouncedQuery && (
@@ -543,24 +545,10 @@ const FindTalent = () => {
                     </p>
                   )}
                 </div>
-                
-                {/* <Button 
-                  variant="outline" 
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-blue-50 transition-all duration-200"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                  {activeFiltersCount > 0 && (
-                    <Badge variant="destructive" className="ml-2 h-4 w-4 p-0 flex items-center justify-center text-xs">
-                      {activeFiltersCount}
-                    </Badge>
-                  )}
-                </Button> */}
               </div>
-              
+
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48 bg-white/80 backdrop-blur-sm">
+                <SelectTrigger className="w-full sm:w-48 bg-white/80 backdrop-blur-sm">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -596,35 +584,34 @@ const FindTalent = () => {
               </div>
             )}            {/* Freelancers Grid */}
             {!isLoading && !error && (
-              <div className="space-y-6">
-                {/* Search Results Summary */}
+              <div className="space-y-6">                {/* Search Results Summary */}
                 {debouncedQuery.trim() && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
-                        <h3 className="font-medium text-blue-900">
+                        <h3 className="font-medium text-blue-900 text-sm sm:text-base">
                           Search Results for "{debouncedQuery}"
                         </h3>
                         <p className="text-sm text-blue-700">
                           {freelancers.length} freelancer{freelancers.length !== 1 ? 's' : ''} found
                         </p>
                       </div>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           setSearchQuery("");
                           setDebouncedQuery("");
                         }}
-                        className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-100 text-xs sm:text-sm"
                       >
-                        <X className="w-4 h-4 mr-1" />
+                        <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         Clear Search
                       </Button>
                     </div>
                   </div>
                 )}
-                
+
                 {freelancers.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 max-w-md mx-auto">
@@ -637,33 +624,34 @@ const FindTalent = () => {
                         Clear All Filters
                       </Button>
                     </div>
-                  </div>
-                ) : (
+                  </div>) : (
                   freelancers.map((freelancer) => (
                     <Card key={freelancer.id} className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-gray-200 group">
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-6">
-                          {/* Avatar */}                          <div className="flex-shrink-0">
-                            <Avatar className="w-20 h-20 ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                          {/* Avatar */}
+                          <div className="flex-shrink-0 self-center sm:self-start">
+                            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all">
                               <AvatarImage src={freelancer.user.profileImage || undefined} />
-                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl">
+                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg sm:text-xl">
                                 {freelancer.user.name?.charAt(0)?.toUpperCase() || 'U'}
                               </AvatarFallback>
                             </Avatar>
                           </div>
-                          
+
                           {/* Main Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-3">                              <div>
-                                <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <div className="flex-1 min-w-0 w-full">
+                            <div className="flex flex-col sm:flex-row items-start justify-between mb-3 gap-2">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors break-words">
                                   {highlightSearchTerm(freelancer.user.name || 'Anonymous User', debouncedQuery)}
                                 </h3>
-                                <p className="text-blue-600 font-medium">
+                                <p className="text-blue-600 font-medium text-sm sm:text-base">
                                   {freelancer.experience ? `${highlightSearchTerm(freelancer.experience, debouncedQuery)} Experience` : 'Experience not specified'}
                                 </p>
                               </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-bold text-gray-900">
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                                   {freelancer.hourlyRate ? `$${freelancer.hourlyRate}` : 'Rate not set'}
                                   <span className="text-sm text-gray-500 font-normal">/hr</span>
                                 </p>
@@ -674,78 +662,84 @@ const FindTalent = () => {
                                       {freelancer.ratings || 0}
                                     </span>
                                   </div>
-                                  <span className="text-sm text-gray-500 ml-2">
+                                  <span className="text-sm text-gray-500 ml-2 hidden sm:inline">
                                     ({freelancer.projectsCompleted} projects)
                                   </span>
                                 </div>
                               </div>
                             </div>
-                            
-                            {/* Stats Row */}                            <div className="flex items-center text-sm text-gray-600 mb-4 space-x-4">
+
+                            {/* Stats Row */}
+                            <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 mb-4 gap-2 sm:gap-4">
                               <div className="flex items-center">
-                                <MapPin className="h-4 w-4 mr-1 text-blue-500" />
-                                <span className="truncate max-w-[150px]">
+                                <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-blue-500" />
+                                <span className="truncate max-w-[120px] sm:max-w-[150px]">
                                   {freelancer.user.location || 'Location not specified'}
                                 </span>
                               </div>
                               <div className="flex items-center">
-                                <Briefcase className="h-4 w-4 mr-1 text-green-500" />
+                                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-green-500" />
                                 {freelancer.projectsCompleted} completed
                               </div>
                               <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1 text-purple-500" />
-                                Member since {formatTimeAgo(freelancer.user.createdAt)}
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-purple-500" />
+                                <span className="hidden sm:inline">Member since </span>
+                                {formatTimeAgo(freelancer.user.createdAt)}
                               </div>
                             </div>
-                              {/* Bio */}
-                            <p className="text-gray-700 mb-4 line-clamp-2 leading-relaxed">
+
+                            {/* Bio */}
+                            <p className="text-gray-700 mb-4 line-clamp-2 leading-relaxed text-sm sm:text-base">
                               {highlightSearchTerm(freelancer.user.bio || 'Professional freelancer ready to help with your project needs.', debouncedQuery)}
                             </p>
-                            
+
                             {/* Skills */}
                             <div className="flex flex-wrap gap-2 mb-6">
                               {freelancer.skills?.slice(0, 6).map((skill) => {
                                 const isHighlighted = debouncedQuery.trim() && skill.toLowerCase().includes(debouncedQuery.toLowerCase());
                                 return (
-                                  <Badge 
-                                    key={skill} 
-                                    variant="secondary" 
-                                    className={`transition-colors ${
-                                      isHighlighted 
-                                        ? 'bg-yellow-200 text-yellow-800 border-yellow-300' 
-                                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                                    }`}
+                                  <Badge
+                                    key={skill}
+                                    variant="secondary"
+                                    className={`transition-colors text-xs ${isHighlighted
+                                      ? 'bg-yellow-200 text-yellow-800 border-yellow-300'
+                                      : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                      }`}
                                   >
                                     {highlightSearchTerm(skill, debouncedQuery)}
                                   </Badge>
                                 );
                               })}
                               {freelancer.skills?.length > 6 && (
-                                <Badge variant="outline" className="border-blue-200 text-blue-600">
+                                <Badge variant="outline" className="border-blue-200 text-blue-600 text-xs">
                                   +{freelancer.skills.length - 6} more
                                 </Badge>
                               )}
                               {freelancer.skills?.length === 0 && (
-                                <Badge variant="outline" className="text-gray-500">
+                                <Badge variant="outline" className="text-gray-500 text-xs">
                                   No skills listed
                                 </Badge>
                               )}
                             </div>
-                              {/* Action Buttons */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex space-x-3">
-                                <Button 
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
+                                <Button
                                   onClick={() => setSelectedFreelancer(freelancer)}
-                                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6"
+                                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 w-full sm:w-auto"
+                                  size="sm"
                                 >
                                   <Mail className="h-4 w-4 mr-2" />
                                   Contact
-                                </Button>                                <Button 
-                                  variant="outline" 
+                                </Button>
+                                <Button
+                                  variant="outline"
                                   asChild
-                                  className="hover:bg-blue-50 hover:border-blue-200"
+                                  className="hover:bg-blue-50 hover:border-blue-200 w-full sm:w-auto"
+                                  size="sm"
                                 >
-                                  <Link 
+                                  <Link
                                     to={generatePublicProfileUrl(freelancer.user.name || 'Anonymous User', freelancer.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -754,11 +748,10 @@ const FindTalent = () => {
                                     View Profile
                                   </Link>
                                 </Button>
-
                               </div>
-                              
+
                               {freelancer.availability && (
-                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm self-start sm:self-center">
                                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                                   Available Now
                                 </Badge>
@@ -771,22 +764,22 @@ const FindTalent = () => {
                   ))
                 )}
               </div>
-            )}
-
-            {/* Enhanced Pagination */}
+            )}            {/* Enhanced Pagination */}
             {!isLoading && !error && pagination.pages > 1 && (
-              <div className="flex justify-center items-center space-x-4 mt-12">
+              <div className="flex justify-center items-center space-x-2 sm:space-x-4 mt-8 sm:mt-12 px-4">
                 <Button
                   variant="outline"
                   onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
                   disabled={pagination.page === 1}
-                  className="bg-white/80 backdrop-blur-sm"
+                  className="bg-white/80 backdrop-blur-sm text-xs sm:text-sm px-2 sm:px-4"
+                  size="sm"
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </Button>
-                
-                <div className="flex items-center space-x-2">
+
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
                     const page = i + 1;
                     return (
@@ -795,25 +788,27 @@ const FindTalent = () => {
                         variant={pagination.page === page ? "default" : "outline"}
                         size="sm"
                         onClick={() => setPagination(prev => ({ ...prev, page }))}
-                        className={pagination.page === page 
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" 
+                        className={`text-xs sm:text-sm w-8 h-8 sm:w-10 sm:h-10 p-0 ${pagination.page === page
+                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
                           : "bg-white/80 backdrop-blur-sm"
-                        }
+                          }`}
                       >
                         {page}
                       </Button>
                     );
                   })}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
                   disabled={pagination.page === pagination.pages}
-                  className="bg-white/80 backdrop-blur-sm"
+                  className="bg-white/80 backdrop-blur-sm text-xs sm:text-sm px-2 sm:px-4"
+                  size="sm"
                 >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <span className="hidden sm:inline">Next</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                 </Button>
               </div>
             )}

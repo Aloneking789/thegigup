@@ -71,6 +71,7 @@ const PublicProfile = () => {
             console.log('Profile data from users API:', data);
             
             if (data.success) {
+               console.log(data);
               setProfileData(data.data);
               
               // Determine if this is a freelancer or client based on the userType in response
@@ -114,8 +115,10 @@ const PublicProfile = () => {
                 userType: 'FREELANCER',
                 freelancer: data.data.freelancer,
                 ratingsReceived: data.data.ratingsReceived,
-                completedProjects: data.data.completedProjects
+                completedProjects: data.data.completedProjects,
+                email:data.data.email
               };
+              console.log(data);
               
               setProfileData(transformedData);
               setUserRole('FREELANCER');

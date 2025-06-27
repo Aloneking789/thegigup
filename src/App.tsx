@@ -31,6 +31,7 @@ import SuccessTips from "./pages/SuccessTips";
 import ForgotPassword from '@/pages/ForgotPassword';
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Sitemap from "./pages/Sitemap";
 
 const queryClient = new QueryClient();
 
@@ -40,51 +41,52 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>        <Routes>          {/* Public routes - only accessible when not logged in */}
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />          <Route path="/how-to-find-work" element={<HowToFindWork />} />
-          <Route path="/skill-development" element={<SkillDevelopment />} />
-          <Route path="/success-stories" element={<SuccessStories />} />
-          {/* <Route path="/careers" element={<Careers />} /> */}
-          <Route path="/press" element={<Press />} />
-          <Route path="/contact-support" element={<ContactSupport />} />
-          <Route path="/get-started" element={<GetStarted />} />
-          <Route path="/success-tips" element={<SuccessTips />} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          <Route path="/client-signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          <Route path="/freelancer-signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />          <Route path="/how-to-find-work" element={<HowToFindWork />} />
+        <Route path="/skill-development" element={<SkillDevelopment />} />
+        <Route path="/success-stories" element={<SuccessStories />} />
+        {/* <Route path="/careers" element={<Careers />} /> */}
+        <Route path="/press" element={<Press />} />
+        <Route path="/contact-support" element={<ContactSupport />} />
+        <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/success-tips" element={<SuccessTips />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/client-signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/freelancer-signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
-          {/* Public profile route - accessible to everyone */}
-          <Route path="/profile/:nameSlug/:userId" element={<PublicProfile />} />
+        {/* Public profile route - accessible to everyone */}
+        <Route path="/profile/:nameSlug/:userId" element={<PublicProfile />} />
 
-          {/* Protected routes - require authentication */}
-          <Route path="/client-dashboard" element={<ProtectedRoute allowedRoles={['CLIENT']}><ClientDashboard /></ProtectedRoute>} />
-          <Route path="/freelancer-dashboard" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FreelancerDashboard /></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-          
-          {/* Profile setup routes */}
-          <Route path="/freelancer-profile-setup" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FreelancerProfileSetup /></ProtectedRoute>} />
-          <Route path="/client-profile-setup" element={<ProtectedRoute allowedRoles={['CLIENT']}><ClientProfileSetup /></ProtectedRoute>} />
-          
-          {/* General protected routes */}
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          
-          {/* Client-specific routes */}
-          <Route path="/find-talent" element={<ProtectedRoute allowedRoles={['CLIENT']}><FindTalent /></ProtectedRoute>} />
-          <Route path="/post-job" element={<ProtectedRoute allowedRoles={['CLIENT']}><PostJob /></ProtectedRoute>} />
-          
-          {/* Freelancer-specific routes */}
-          <Route path="/find-work" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FindWork /></ProtectedRoute>} />
-          
-          {/* Terms and Privacy routes */}
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        {/* Protected routes - require authentication */}
+        <Route path="/client-dashboard" element={<ProtectedRoute allowedRoles={['CLIENT']}><ClientDashboard /></ProtectedRoute>} />
+        <Route path="/freelancer-dashboard" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FreelancerDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+
+        {/* Profile setup routes */}
+        <Route path="/freelancer-profile-setup" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FreelancerProfileSetup /></ProtectedRoute>} />
+        <Route path="/client-profile-setup" element={<ProtectedRoute allowedRoles={['CLIENT']}><ClientProfileSetup /></ProtectedRoute>} />
+
+        {/* General protected routes */}
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+
+        {/* Client-specific routes */}
+        <Route path="/find-talent" element={<ProtectedRoute allowedRoles={['CLIENT']}><FindTalent /></ProtectedRoute>} />
+        <Route path="/post-job" element={<ProtectedRoute allowedRoles={['CLIENT']}><PostJob /></ProtectedRoute>} />
+
+        {/* Freelancer-specific routes */}
+        <Route path="/find-work" element={<ProtectedRoute allowedRoles={['FREELANCER']}><FindWork /></ProtectedRoute>} />
+
+        {/* Terms and Privacy routes */}
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/sitemap" element={<Sitemap />} />
+
+        {/* Catch-all route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

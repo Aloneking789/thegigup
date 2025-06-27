@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Briefcase, Mail, Lock, User, Users, Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { API_CONFIG, getApiUrl, setTokenByRole } from "@/lib/config/api";
-import TermsModal from "@/components/TermsModal";
+import SEO from "@/components/SEO";
 
-type Step = 'email-verification' | 'otp-verification' | 'terms-acceptance' | 'signup-form';
+type Step = 'email-verification' | 'otp-verification' | 'signup-form';
 
 const Signup = () => {
+  const [searchParams] = useSearchParams();
+  const userType = searchParams.get('type');
+
   const [currentStep, setCurrentStep] = useState<Step>('email-verification');
   const [formData, setFormData] = useState({
     name: "",
@@ -19,10 +23,10 @@ const Signup = () => {
     confirmPassword: "",
     role: "",
     otp: ""
-  });  const [showPassword, setShowPassword] = useState(false);
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -44,7 +48,7 @@ const Signup = () => {
 
     try {
       const apiUrl = getApiUrl('/email/send-verification-otp');
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -86,7 +90,7 @@ const Signup = () => {
 
     try {
       const apiUrl = getApiUrl('/email/verify-otp');
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -98,14 +102,13 @@ const Signup = () => {
         }),
       });
 
-      const data = await response.json();      if (response.ok) {
+      const data = await response.json(); if (response.ok) {
         toast({
           title: "Email Verified!",
           description: "Your email has been verified successfully.",
         });
         setIsEmailVerified(true);
-        setCurrentStep('terms-acceptance');
-        setIsTermsModalOpen(true);
+        setCurrentStep('signup-form');
       } else {
         toast({
           title: "Verification Failed",
@@ -125,25 +128,9 @@ const Signup = () => {
     }
   };
 
-  // Add handlers for terms modal
-  const handleAcceptTerms = () => {
-    setHasAcceptedTerms(true);
-    setIsTermsModalOpen(false);
-    setCurrentStep('signup-form');
-  };
-
-  const handleDeclineTerms = () => {
-    setIsTermsModalOpen(false);
-    setCurrentStep('otp-verification');
-    toast({
-      title: "Terms Required",
-      description: "You must accept the terms and conditions to continue.",
-      variant: "destructive"
-    });
-  };
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isEmailVerified) {
       toast({
         title: "Error",
@@ -156,12 +143,12 @@ const Signup = () => {
     if (!hasAcceptedTerms) {
       toast({
         title: "Error",
-        description: "Please accept the terms and conditions first",
+        description: "Please accept the terms and conditions to continue",
         variant: "destructive"
       });
       return;
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -184,12 +171,12 @@ const Signup = () => {
 
     try {
       // Determine the API endpoint based on role
-      const endpoint = formData.role === "client" 
-        ? API_CONFIG.ENDPOINTS.CLIENT.SIGNUP 
+      const endpoint = formData.role === "client"
+        ? API_CONFIG.ENDPOINTS.CLIENT.SIGNUP
         : API_CONFIG.ENDPOINTS.FREELANCER.SIGNUP;
-      
+
       const apiUrl = getApiUrl(endpoint);
-      
+
       // Prepare signup payload
       const signupData = {
         name: formData.name,
@@ -223,7 +210,7 @@ const Signup = () => {
           title: "Account created successfully!",
           description: "Welcome to TheGigUp",
         });
-        
+
         // Navigate to profile setup based on role
         if (formData.role === "client") {
           navigate("/client-profile-setup");
@@ -233,7 +220,7 @@ const Signup = () => {
       } else {
         // Enhanced error handling for email already exists scenarios
         let errorMessage = data.message || "An error occurred during signup";
-        
+
         // Check for email already exists scenarios based on status code and message
         if (response.status === 409 || response.status === 400) {
           // HTTP 409 Conflict or 400 Bad Request usually indicates duplicate resource
@@ -266,7 +253,7 @@ const Signup = () => {
       }
     } catch (error) {
       console.error('Signup error:', error);
-      
+
       // More specific error handling
       if (error instanceof TypeError && error.message.includes('fetch')) {
         toast({
@@ -298,7 +285,7 @@ const Signup = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Verify Your Email</h2>
         <p className="text-gray-600">Enter your email to receive a verification code</p>
       </div> */}
-      
+
       <form onSubmit={handleSendVerificationOTP} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Email Address</label>
@@ -315,7 +302,7 @@ const Signup = () => {
             />
           </div>
         </div>
-        
+
         <Button
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -334,7 +321,7 @@ const Signup = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Enter Verification Code</h2>
         <p className="text-gray-600">We sent a verification code to {formData.email}</p>
       </div>
-      
+
       <form onSubmit={handleVerifyEmailOTP} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Verification Code</label>
@@ -349,7 +336,7 @@ const Signup = () => {
             required
           />
         </div>
-        
+
         <div className="flex space-x-3">
           <Button
             type="button"
@@ -369,7 +356,7 @@ const Signup = () => {
           </Button>
         </div>
       </form>
-      
+
       <div className="text-center">
         <button
           onClick={handleSendVerificationOTP}
@@ -381,56 +368,17 @@ const Signup = () => {
     </div>
   );
 
-  const renderTermsAcceptance = () => (
+  const renderSignupForm = () => (
     <div className="space-y-6">
       <div className="text-center">
         <div className="flex items-center justify-center mb-3">
           <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
           <span className="text-sm text-green-600 font-medium">Email Verified</span>
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Accept Terms & Conditions</h2>
-        <p className="text-gray-600">Please review and accept our terms to continue</p>
-      </div>
-      
-      <div className="text-center py-8">
-        <p className="text-gray-500 mb-4">Please review the terms and conditions in the modal that opened.</p>
-        <Button
-          onClick={() => setIsTermsModalOpen(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          Review Terms & Conditions
-        </Button>
-      </div>
-      
-      <div className="flex justify-center">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentStep('otp-verification')}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Verification
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderSignupForm = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="flex items-center justify-center space-x-4 mb-3">
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-            <span className="text-sm text-green-600 font-medium">Email Verified</span>
-          </div>
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-            <span className="text-sm text-green-600 font-medium">Terms Accepted</span>
-          </div>
-        </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Complete Your Profile</h2>
         <p className="text-gray-600">Fill in your details to create your account</p>
       </div>
-      
+
       <form onSubmit={handleSignup} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Full Name</label>
@@ -447,7 +395,7 @@ const Signup = () => {
             />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Email</label>
           <div className="relative">
@@ -462,7 +410,7 @@ const Signup = () => {
             />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Password</label>
           <div className="relative">
@@ -485,7 +433,7 @@ const Signup = () => {
             </button>
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Confirm Password</label>
           <div className="relative">
@@ -501,7 +449,7 @@ const Signup = () => {
             />
           </div>
         </div>
-        
+
         {/* Role Selection */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-gray-700">I want to:</label>
@@ -509,40 +457,56 @@ const Signup = () => {
             <button
               type="button"
               onClick={() => handleRoleSelect("client")}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                formData.role === "client"
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              className={`p-4 rounded-lg border-2 transition-all ${formData.role === "client"
+                ? "border-blue-600 bg-blue-50 text-blue-700"
+                : "border-gray-200 hover:border-gray-300"
+                }`}
             >
               <Users className="w-6 h-6 mx-auto mb-2" />
               <div className="text-sm font-medium">Hire Talent</div>
               <div className="text-xs text-gray-500">I'm a client</div>
             </button>
-            
+
             <button
               type="button"
               onClick={() => handleRoleSelect("freelancer")}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                formData.role === "freelancer"
-                  ? "border-purple-600 bg-purple-50 text-purple-700"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              className={`p-4 rounded-lg border-2 transition-all ${formData.role === "freelancer"
+                ? "border-purple-600 bg-purple-50 text-purple-700"
+                : "border-gray-200 hover:border-gray-300"
+                }`}
             >
               <Briefcase className="w-6 h-6 mx-auto mb-2" />
               <div className="text-sm font-medium">Find Work</div>
               <div className="text-xs text-gray-500">I'm a freelancer</div>
             </button>
-          </div>        </div>
-        
+          </div>
+        </div>
+
+        {/* Terms and Conditions Checkbox */}
+        <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
+          <Checkbox
+            id="accept-terms"
+            checked={hasAcceptedTerms}
+            onCheckedChange={(checked) => setHasAcceptedTerms(checked === true)}
+            className="mt-1"
+            required
+          />
+          <label htmlFor="accept-terms" className="text-sm font-medium leading-relaxed cursor-pointer">
+            I have read and agree to the{" "}
+            <Link to="/terms" target="_blank" className="text-blue-600 hover:text-blue-500 underline">
+              Terms and Conditions
+            </Link>
+            {" "}and <Link to="/privacy" target="_blank" className="text-blue-600 hover:text-blue-500 underline">
+              Privacy Policy
+            </Link>.
+          </label>
+        </div>
+
         <div className="flex space-x-3">
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
-              setCurrentStep('terms-acceptance');
-              setIsTermsModalOpen(true);
-            }}
+            onClick={() => setCurrentStep('otp-verification')}
             className="flex-1"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -551,7 +515,7 @@ const Signup = () => {
           <Button
             type="submit"
             className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            disabled={isLoading}
+            disabled={isLoading || !hasAcceptedTerms}
           >
             {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
@@ -562,6 +526,13 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      {/* SEO Meta Tags with canonical URL */}
+      <SEO
+        title={userType === 'client' ? 'Join TheGigUp as Client - Hire Freelancers' : userType === 'freelancer' ? 'Join TheGigUp as Freelancer - Find Work' : 'Sign Up - TheGigUp Freelance Marketplace'}
+        description={userType === 'client' ? 'Join TheGigUp as a client to hire skilled freelancers for your projects. Post jobs and find the perfect talent today.' : userType === 'freelancer' ? 'Join TheGigUp as a freelancer to find exciting projects and clients. Build your career in the gig economy.' : 'Create your TheGigUp account. Join as a client to hire freelancers or as a freelancer to find work.'}
+        url="https://www.thegigup.com/signup"
+      />
+
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -578,12 +549,11 @@ const Signup = () => {
             <CardTitle className="text-2xl font-bold text-gray-800">Join TheGigUp</CardTitle>
             <p className="text-gray-600">Create your account to get started</p>
           </CardHeader>
-            <CardContent>
+          <CardContent>
             {currentStep === 'email-verification' && renderEmailVerification()}
             {currentStep === 'otp-verification' && renderOTPVerification()}
-            {currentStep === 'terms-acceptance' && renderTermsAcceptance()}
             {currentStep === 'signup-form' && renderSignupForm()}
-            
+
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{" "}
@@ -594,13 +564,6 @@ const Signup = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Terms Modal */}
-        <TermsModal
-          isOpen={isTermsModalOpen}
-          onClose={handleDeclineTerms}
-          onAccept={handleAcceptTerms}
-        />
       </div>
     </div>
   );
