@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { 
+import {
   Briefcase,
   Settings,
   FileText,
-  DollarSign
+  DollarSign,
+  Search,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +21,8 @@ import { clientService } from "@/lib/api/client";
 import { isLoggedIn, RoleStorage, logout } from "@/lib/config/api";
 import MobileNav from "@/components/MobileNav";
 
-const PostJob = () => {  const navigate = useNavigate();
+const PostJob = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,11 +43,77 @@ const PostJob = () => {  const navigate = useNavigate();
     duration: ""
   });
 
+  // Skills search state
+  const [skillSearchQuery, setSkillSearchQuery] = useState("");
+  const [showAllSkills, setShowAllSkills] = useState(false);
+
   const skillOptions = [
-    "React", "Node.js", "Python", "JavaScript", "TypeScript", "PHP", "Java",
-    "Figma", "Adobe XD", "Photoshop", "UI/UX Design", "Graphic Design",
-    "Content Writing", "SEO", "Social Media Marketing", "Digital Marketing",
-    "HTML", "CSS", "MongoDB", "PostgreSQL", "Express.js", "Vue.js", "Angular"  ];
+    // Programming & Development
+    "Python", "JavaScript", "Java", "C++", "PHP", "Ruby", "Swift", "Kotlin", "TypeScript",
+    "HTML/CSS", "React.js", "Angular", "Vue.js", "Node.js", "Express.js", "Django", "Flask", ".NET",
+    "SQL/NoSQL", "MongoDB", "PostgreSQL",
+
+    // Web & App Development
+    "Web Development", "App Development", "Frontend Development", "Backend Development",
+    "Full Stack Development", "Mobile App Development", "Responsive Design",
+
+    // Design & Creative
+    "UI/UX Design", "Graphic Design", "Logo Design", "Branding", "Animation", "Video Editing",
+    "Photography", "Motion Graphics", "Adobe Photoshop", "Adobe Illustrator", "Adobe Premiere Pro",
+    "Figma", "Canva", "Sketch", "Adobe XD", "Presentation Design",
+
+    // Data & Analytics
+    "Data Analysis", "Data Science", "Data Mining", "Big Data", "Machine Learning",
+    "Artificial Intelligence", "Deep Learning", "Python for Data Science", "R Programming",
+    "Power BI", "Tableau", "Data Visualization", "NLP (Natural Language Processing)",
+    "Computer Vision", "Analytics (Google, Facebook, etc.)",
+
+    // Digital Marketing & SEO
+    "Digital Marketing", "SEO (Search Engine Optimization)", "SEM (Search Engine Marketing)",
+    "Social Media Marketing", "Email Marketing", "Content Marketing", "Growth Hacking",
+    "Influencer Marketing", "Affiliate Marketing", "Brand Strategy", "Facebook/Instagram Ads",
+    "Google Ads", "Marketing Automation", "Funnel Building",
+
+    // Business & Management
+    "Project Management", "Product Management", "Business Analysis", "Strategic Planning",
+    "Market Research", "Operations Management", "Sales Strategy", "Business Development",
+    "Financial Planning", "Risk Management", "Customer Relationship Management (CRM)",
+    "Supply Chain Management",
+
+    // Writing & Content
+    "Copywriting", "Content Writing", "Technical Writing", "Blogging", "Creative Writing",
+    "Editing & Proofreading", "Translation", "Public Speaking", "Storytelling",
+
+    // Technology & Infrastructure
+    "Cybersecurity", "Cloud Computing", "DevOps", "Blockchain", "Networking",
+    "Database Management", "Game Development", "Automation", "AR/VR Development",
+
+    // Finance & Accounting
+    "Bookkeeping", "Financial Analysis", "Budgeting", "Payroll Management",
+    "Tax Preparation", "QuickBooks", "Excel Modeling", "Investment Analysis",
+    "Auditing", "Financial Reporting"
+  ];
+
+  // Top 20 most popular skills
+  const popularSkills = [
+    "JavaScript", "Python", "React.js", "Node.js", "UI/UX Design", "Web Development",
+    "HTML/CSS", "Graphic Design", "Content Writing", "Digital Marketing", "SEO (Search Engine Optimization)",
+    "Angular", "Vue.js", "PHP", "Java", "Adobe Photoshop", "Figma", "Data Analysis",
+    "Project Management", "Copywriting"
+  ];
+
+  // Filter skills based on search query
+  const getFilteredSkills = () => {
+    if (!skillSearchQuery.trim()) {
+      return showAllSkills ? skillOptions : popularSkills;
+    }
+
+    return skillOptions.filter(skill =>
+      skill.toLowerCase().includes(skillSearchQuery.toLowerCase())
+    );
+  };
+
+  const filteredSkills = getFilteredSkills();
 
   // Initialize user state
   useEffect(() => {
@@ -81,7 +150,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     if (!formData.description.trim()) {
       toast({
         title: "Error",
@@ -90,7 +159,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     if (formData.skills.length === 0) {
       toast({
         title: "Error",
@@ -99,7 +168,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     if (!formData.budgetMin || !formData.budgetMax) {
       toast({
         title: "Error",
@@ -108,10 +177,10 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     const minBudget = parseFloat(formData.budgetMin);
     const maxBudget = parseFloat(formData.budgetMax);
-    
+
     if (isNaN(minBudget) || isNaN(maxBudget)) {
       toast({
         title: "Error",
@@ -120,7 +189,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     if (minBudget >= maxBudget) {
       toast({
         title: "Error",
@@ -129,7 +198,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     if (!formData.duration) {
       toast({
         title: "Error",
@@ -138,7 +207,7 @@ const PostJob = () => {  const navigate = useNavigate();
       });
       return false;
     }
-    
+
     return true;
   };
 
@@ -158,7 +227,7 @@ const PostJob = () => {  const navigate = useNavigate();
 
       console.log('Creating project with data:', projectData);
       const response = await clientService.createProject(projectData);
-      
+
       if (response.success) {
         toast({
           title: "Job Posted Successfully!",
@@ -174,7 +243,8 @@ const PostJob = () => {  const navigate = useNavigate();
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to post job. Please try again.",
         variant: "destructive",
-      });    } finally {
+      });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -183,7 +253,7 @@ const PostJob = () => {  const navigate = useNavigate();
     logout();
     navigate('/');
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -199,8 +269,8 @@ const PostJob = () => {  const navigate = useNavigate();
               <Link to="/client-dashboard" className="text-gray-600 hover:text-blue-600">Dashboard</Link>
               <Link to="/find-talent" className="text-gray-600 hover:text-blue-600">Find Talent</Link>
               <Link to="/profile" className="text-gray-600 hover:text-blue-600">Profile</Link>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleLogout}
                 className="border-red-300 text-red-600 hover:bg-red-50"
@@ -208,7 +278,7 @@ const PostJob = () => {  const navigate = useNavigate();
                 Logout
               </Button>
             </nav>
-            <MobileNav 
+            <MobileNav
               userLoggedIn={true}
               userRole="CLIENT"
               userProfile={userProfile}
@@ -240,7 +310,7 @@ const PostJob = () => {  const navigate = useNavigate();
                 <Input
                   placeholder="e.g., Build a responsive website with React"
                   value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="border-gray-200"
                 />
               </div>
@@ -254,7 +324,7 @@ const PostJob = () => {  const navigate = useNavigate();
                   placeholder="Describe your project requirements, deliverables, and expectations..."
                   rows={6}
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="border-gray-200"
                 />
               </div>
@@ -264,23 +334,102 @@ const PostJob = () => {  const navigate = useNavigate();
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Skills Required <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
-                  {skillOptions.map((skill) => (
-                    <div key={skill} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={skill}
-                        checked={formData.skills.includes(skill)}
-                        onCheckedChange={() => handleSkillToggle(skill)}
-                      />
-                      <label htmlFor={skill} className="text-sm text-gray-700">{skill}</label>
+
+                {/* Skills Search */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search skills..."
+                      value={skillSearchQuery}
+                      onChange={(e) => setSkillSearchQuery(e.target.value)}
+                      className="pl-10 border-gray-200"
+                    />
+                    {skillSearchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSkillSearchQuery("")}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Show All Skills Toggle */}
+                  {!skillSearchQuery && (
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs text-gray-500">
+                        {showAllSkills ? `Showing all ${skillOptions.length} skills` : `Showing ${popularSkills.length} popular skills`}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllSkills(!showAllSkills)}
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-auto"
+                      >
+                        {showAllSkills ? 'Show popular only' : 'Show all skills'}
+                      </Button>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Search Results Info */}
+                  {skillSearchQuery && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {filteredSkills.length} skill{filteredSkills.length !== 1 ? 's' : ''} found
+                    </p>
+                  )}
                 </div>
+
+                {/* Skills Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {filteredSkills.length > 0 ? (
+                    filteredSkills.map((skill) => (
+                      <div key={skill} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={skill}
+                          checked={formData.skills.includes(skill)}
+                          onCheckedChange={() => handleSkillToggle(skill)}
+                        />
+                        <label htmlFor={skill} className="text-sm text-gray-700 cursor-pointer">
+                          {skill}
+                        </label>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8 text-gray-500">
+                      <p>No skills found matching "{skillSearchQuery}"</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSkillSearchQuery("")}
+                        className="mt-2 text-blue-600 hover:text-blue-800"
+                      >
+                        Clear search
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Skills */}
                 {formData.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                    ))}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      Selected Skills ({formData.skills.length}):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.skills.map((skill) => (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-red-100 transition-colors"
+                          onClick={() => handleSkillToggle(skill)}
+                        >
+                          {skill} <X className="h-3 w-3 ml-1" />
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -297,7 +446,7 @@ const PostJob = () => {  const navigate = useNavigate();
                       type="number"
                       placeholder="e.g., 500"
                       value={formData.budgetMin}
-                      onChange={(e) => setFormData({...formData, budgetMin: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, budgetMin: e.target.value })}
                       className="border-gray-200"
                     />
                   </div>
@@ -307,7 +456,7 @@ const PostJob = () => {  const navigate = useNavigate();
                       type="number"
                       placeholder="e.g., 1500"
                       value={formData.budgetMax}
-                      onChange={(e) => setFormData({...formData, budgetMax: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, budgetMax: e.target.value })}
                       className="border-gray-200"
                     />
                   </div>
@@ -319,7 +468,7 @@ const PostJob = () => {  const navigate = useNavigate();
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Project Duration <span className="text-red-500">*</span>
                 </label>
-                <Select value={formData.duration} onValueChange={(value) => setFormData({...formData, duration: value})}>
+                <Select value={formData.duration} onValueChange={(value) => setFormData({ ...formData, duration: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select project duration" />
                   </SelectTrigger>
@@ -355,11 +504,11 @@ const PostJob = () => {  const navigate = useNavigate();
                           <DollarSign className="w-4 h-4 mr-1 text-green-600" />
                           <span className="font-medium">Budget:</span>
                           <span className="ml-1">
-                            {formData.budgetMin && formData.budgetMax 
+                            {formData.budgetMin && formData.budgetMax
                               ? `$${parseFloat(formData.budgetMin).toLocaleString()} - $${parseFloat(formData.budgetMax).toLocaleString()}`
-                              : formData.budgetMin 
+                              : formData.budgetMin
                                 ? `$${parseFloat(formData.budgetMin).toLocaleString()}+`
-                                : formData.budgetMax 
+                                : formData.budgetMax
                                   ? `Up to $${parseFloat(formData.budgetMax).toLocaleString()}`
                                   : ''
                             }
@@ -387,8 +536,8 @@ const PostJob = () => {  const navigate = useNavigate();
 
           {/* Submit Button */}
           <div className="flex justify-end mt-8">
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="bg-blue-600 hover:bg-blue-700 px-8"
             >

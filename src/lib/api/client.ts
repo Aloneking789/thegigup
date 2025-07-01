@@ -307,7 +307,7 @@ export class ClientService {
 
     return response.json();
   }
-  // Get Freelancers for Client (with email access)
+  // Get Freelancers for Client (with email access) - using new search endpoint
   async getFreelancers(params?: {
     page?: number;
     limit?: number;
@@ -339,7 +339,7 @@ export class ClientService {
     if (params?.availability) searchParams.append('availability', params.availability);
     if (params?.query) searchParams.append('query', params.query);
 
-    const url = getApiUrl(`/client/freelancers${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
+    const url = getApiUrl(`/client/freelancers/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -348,6 +348,54 @@ export class ClientService {
 
     if (!response.ok) {
       throw new Error(`Failed to fetch freelancers: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    
+    // Transform the new API response to match the expected format
+    if (result.success && result.data) {
+      const transformedFreelancers = result.data.freelancers.map((freelancer: any) => ({
+        id: freelancer.id,
+        user: {
+          name: freelancer.profile.name,
+          email: '', // Email not provided in search API
+          bio: freelancer.profile.bio,
+          location: freelancer.profile.location,
+          profileImage: freelancer.profile.profileImage,
+          createdAt: freelancer.profile.memberSince
+        },
+        skills: freelancer.professional.skills,
+        experience: freelancer.professional.experience,
+        hourlyRate: freelancer.professional.hourlyRate,
+        availability: freelancer.professional.availability,
+        ratings: freelancer.statistics.rating,
+        projectsCompleted: freelancer.statistics.projectsCompleted,
+        isVerified: freelancer.professional.isVerified,
+        matchScore: freelancer.statistics.matchScore
+      }));
+
+      return {
+        success: true,
+        message: 'Freelancers fetched successfully',
+        data: {
+          freelancers: transformedFreelancers,
+          pagination: result.data.pagination
+        }
+      };
+    }
+
+    return result;
+  }
+
+  // Get freelancer contact details (email) for client
+  async getFreelancerContactDetails(freelancerId: string): Promise<ApiResponse<{ email: string }>> {
+    const response = await fetch(getApiUrl(`/client/freelancers/${freelancerId}/contact`), {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch freelancer contact details: ${response.statusText}`);
     }
 
     return response.json();

@@ -75,12 +75,52 @@ const FindTalent = () => {
     availability: ""
   });
 
-  // Popular skills for filter suggestions
+  // Popular skills for filter suggestions - comprehensive list
   const popularSkills = [
-    "React", "Node.js", "Python", "JavaScript", "TypeScript", "UI/UX Design",
-    "Angular", "Vue.js", "PHP", "Java", "C++", "Swift", "Kotlin", "Flutter",
-    "React Native", "WordPress", "Shopify", "SEO", "Digital Marketing",
-    "Content Writing", "Graphic Design", "Video Editing", "Data Analysis"
+    // Programming & Development
+    "Python", "JavaScript", "Java", "C++", "PHP", "Ruby", "Swift", "Kotlin", "TypeScript",
+    "HTML/CSS", "React.js", "Angular", "Vue.js", "Node.js", "Express.js", "Django", "Flask", ".NET",
+    "SQL/NoSQL", "MongoDB", "PostgreSQL",
+
+    // Web & App Development
+    "Web Development", "App Development", "Frontend Development", "Backend Development",
+    "Full Stack Development", "Mobile App Development", "Responsive Design",
+
+    // Design & Creative
+    "UI/UX Design", "Graphic Design", "Logo Design", "Branding", "Animation", "Video Editing",
+    "Photography", "Motion Graphics", "Adobe Photoshop", "Adobe Illustrator", "Adobe Premiere Pro",
+    "Figma", "Canva", "Sketch", "Adobe XD", "Presentation Design",
+
+    // Data & Analytics
+    "Data Analysis", "Data Science", "Data Mining", "Big Data", "Machine Learning",
+    "Artificial Intelligence", "Deep Learning", "Python for Data Science", "R Programming",
+    "Power BI", "Tableau", "Data Visualization", "NLP (Natural Language Processing)",
+    "Computer Vision", "Analytics (Google, Facebook, etc.)",
+
+    // Digital Marketing & SEO
+    "Digital Marketing", "SEO (Search Engine Optimization)", "SEM (Search Engine Marketing)",
+    "Social Media Marketing", "Email Marketing", "Content Marketing", "Growth Hacking",
+    "Influencer Marketing", "Affiliate Marketing", "Brand Strategy", "Facebook/Instagram Ads",
+    "Google Ads", "Marketing Automation", "Funnel Building",
+
+    // Business & Management
+    "Project Management", "Product Management", "Business Analysis", "Strategic Planning",
+    "Market Research", "Operations Management", "Sales Strategy", "Business Development",
+    "Financial Planning", "Risk Management", "Customer Relationship Management (CRM)",
+    "Supply Chain Management",
+
+    // Writing & Content
+    "Copywriting", "Content Writing", "Technical Writing", "Blogging", "Creative Writing",
+    "Editing & Proofreading", "Translation", "Public Speaking", "Storytelling",
+
+    // Technology & Infrastructure
+    "Cybersecurity", "Cloud Computing", "DevOps", "Blockchain", "Networking",
+    "Database Management", "Game Development", "Automation", "AR/VR Development",
+
+    // Finance & Accounting
+    "Bookkeeping", "Financial Analysis", "Budgeting", "Payroll Management",
+    "Tax Preparation", "QuickBooks", "Excel Modeling", "Investment Analysis",
+    "Auditing", "Financial Reporting"
   ];  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -151,7 +191,7 @@ const FindTalent = () => {
             const experienceMatch = freelancer.experience?.toLowerCase().includes(query);
 
             // Search in bio/description if available
-            const bioMatch = freelancer.bio?.toLowerCase().includes(query);
+            const bioMatch = freelancer.user.bio?.toLowerCase().includes(query);
 
             return nameMatch || skillsMatch || experienceMatch || bioMatch;
           });
@@ -277,6 +317,41 @@ const FindTalent = () => {
         ? prev.skills.filter(s => s !== skill)
         : [...prev.skills, skill]
     }));
+  };
+
+  const handleContactFreelancer = async (freelancer: ClientFreelancer) => {
+    try {
+      // If we don't have the email, try to fetch it
+      if (!freelancer.user.email) {
+        try {
+          const contactResponse = await clientService.getFreelancerContactDetails(freelancer.id);
+          if (contactResponse.success) {
+            // Update the freelancer object with the email
+            const updatedFreelancer = {
+              ...freelancer,
+              user: {
+                ...freelancer.user,
+                email: contactResponse.data.email
+              }
+            };
+            setSelectedFreelancer(updatedFreelancer);
+          } else {
+            // If API doesn't provide email, still allow contact modal to open
+            setSelectedFreelancer(freelancer);
+          }
+        } catch (error) {
+          // If contact endpoint doesn't exist or fails, still allow contact modal to open
+          console.warn('Contact details endpoint not available, opening modal without email:', error);
+          setSelectedFreelancer(freelancer);
+        }
+      } else {
+        setSelectedFreelancer(freelancer);
+      }
+    } catch (error) {
+      console.error('Error in contact freelancer handler:', error);
+      // Fallback: still open the modal
+      setSelectedFreelancer(freelancer);
+    }
   };
 
   const handleLogout = () => {
@@ -726,7 +801,7 @@ const FindTalent = () => {
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
                                 <Button
-                                  onClick={() => setSelectedFreelancer(freelancer)}
+                                  onClick={() => handleContactFreelancer(freelancer)}
                                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 w-full sm:w-auto"
                                   size="sm"
                                 >
@@ -827,7 +902,7 @@ const FindTalent = () => {
             reviews: selectedFreelancer.projectsCompleted,
             location: selectedFreelancer.user.location || 'Location not specified',
             bio: selectedFreelancer.user.bio || 'No bio available.',
-            email: selectedFreelancer.user.email
+            email: selectedFreelancer.user.email || undefined
           }}
           isOpen={!!selectedFreelancer}
           onClose={() => setSelectedFreelancer(null)}
