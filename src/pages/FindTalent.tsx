@@ -81,45 +81,45 @@ const FindTalent = () => {
     "Python", "JavaScript", "Java", "C++", "PHP", "Ruby", "Swift", "Kotlin", "TypeScript",
     "HTML/CSS", "React.js", "Angular", "Vue.js", "Node.js", "Express.js", "Django", "Flask", ".NET",
     "SQL/NoSQL", "MongoDB", "PostgreSQL",
-
+    
     // Web & App Development
-    "Web Development", "App Development", "Frontend Development", "Backend Development",
+    "Web Development", "App Development", "Frontend Development", "Backend Development", 
     "Full Stack Development", "Mobile App Development", "Responsive Design",
-
+    
     // Design & Creative
     "UI/UX Design", "Graphic Design", "Logo Design", "Branding", "Animation", "Video Editing",
     "Photography", "Motion Graphics", "Adobe Photoshop", "Adobe Illustrator", "Adobe Premiere Pro",
     "Figma", "Canva", "Sketch", "Adobe XD", "Presentation Design",
-
+    
     // Data & Analytics
-    "Data Analysis", "Data Science", "Data Mining", "Big Data", "Machine Learning",
+    "Data Analysis", "Data Science", "Data Mining", "Big Data", "Machine Learning", 
     "Artificial Intelligence", "Deep Learning", "Python for Data Science", "R Programming",
-    "Power BI", "Tableau", "Data Visualization", "NLP (Natural Language Processing)",
+    "Power BI", "Tableau", "Data Visualization", "NLP (Natural Language Processing)", 
     "Computer Vision", "Analytics (Google, Facebook, etc.)",
-
+    
     // Digital Marketing & SEO
     "Digital Marketing", "SEO (Search Engine Optimization)", "SEM (Search Engine Marketing)",
     "Social Media Marketing", "Email Marketing", "Content Marketing", "Growth Hacking",
     "Influencer Marketing", "Affiliate Marketing", "Brand Strategy", "Facebook/Instagram Ads",
     "Google Ads", "Marketing Automation", "Funnel Building",
-
+    
     // Business & Management
     "Project Management", "Product Management", "Business Analysis", "Strategic Planning",
     "Market Research", "Operations Management", "Sales Strategy", "Business Development",
     "Financial Planning", "Risk Management", "Customer Relationship Management (CRM)",
     "Supply Chain Management",
-
+    
     // Writing & Content
     "Copywriting", "Content Writing", "Technical Writing", "Blogging", "Creative Writing",
     "Editing & Proofreading", "Translation", "Public Speaking", "Storytelling",
-
+    
     // Technology & Infrastructure
-    "Cybersecurity", "Cloud Computing", "DevOps", "Blockchain", "Networking",
+    "Cybersecurity", "Cloud Computing", "DevOps", "Blockchain", "Networking", 
     "Database Management", "Game Development", "Automation", "AR/VR Development",
-
+    
     // Finance & Accounting
-    "Bookkeeping", "Financial Analysis", "Budgeting", "Payroll Management",
-    "Tax Preparation", "QuickBooks", "Excel Modeling", "Investment Analysis",
+    "Bookkeeping", "Financial Analysis", "Budgeting", "Payroll Management", 
+    "Tax Preparation", "QuickBooks", "Excel Modeling", "Investment Analysis", 
     "Auditing", "Financial Reporting"
   ];  // Debounce search query
   useEffect(() => {

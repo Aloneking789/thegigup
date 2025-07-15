@@ -263,19 +263,19 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative py-8 sm:py-12 md:py-16 lg:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">            <div className="space-y-8">
-            <div className="space-y-4">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">            <div className="space-y-4 sm:space-y-6 md:space-y-8">
+            <div className="space-y-3 sm:space-y-4">
               {userLoggedIn ? (
                 // Personalized content for logged-in users
                 <>
-                  <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
                     Welcome back,
                     <span className="text-blue-600"> {userProfile?.name?.split(' ')[0] || 'User'}</span>!
                   </h1>
-                  <p className="text-xl text-gray-600 leading-relaxed">
+                  <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
                     {userRole === 'CLIENT'
                       ? "Ready to find the perfect freelancer for your next project? Browse our talented community on TheGigUp."
                       : "Discover exciting projects that match your skills and start earning today on TheGigUp freelance marketplace."
@@ -285,18 +285,18 @@ const Index = () => {
               ) : (
                 // Default content for guests
                 <>
-                  <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-                  
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
+
                     Find the perfect <span className="text-blue-600">freelancer</span> for your project
                   </h1>
-                  <p className="text-xl text-gray-600 leading-relaxed">
+                  <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
                     TheGigUp is the premier freelance marketplace connecting clients with skilled professionals.
                     From web development to design, find experts for every project and work from anywhere.
                   </p>
                 </>
               )}
-            </div>              {/* Search Bar and Actions */}
-            <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">                <div className="relative">
+            </div>            {/* Search Bar and Actions */}
+            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 space-y-3 sm:space-y-4">                <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Search for skills (e.g., React, Python, Design...)"
@@ -384,20 +384,20 @@ const Index = () => {
             </div>
 
             {/* Stats with Schema.org markup */}
-            <div className="grid grid-cols-3 gap-6 pt-8" itemScope itemType="https://schema.org/Organization">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 pt-4 sm:pt-6 md:pt-8" itemScope itemType="https://schema.org/Organization">
               <meta itemProp="name" content="TheGigUp" />
               <meta itemProp="url" content="https://www.thegigup.com" />
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900" itemProp="numberOfEmployees">1K+</div>
-                <div className="text-gray-600">Active Freelancers on TheGigUp</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900" itemProp="numberOfEmployees">1K+</div>
+                <div className="text-sm sm:text-base text-gray-600">Active Freelancers on TheGigUp</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">500+</div>
-                <div className="text-gray-600">Projects Completed</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900">500+</div>
+                <div className="text-sm sm:text-base text-gray-600">Projects Completed</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">98%</div>
-                <div className="text-gray-600">Client Satisfaction</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900">98%</div>
+                <div className="text-sm sm:text-base text-gray-600">Client Satisfaction</div>
               </div>
             </div>
           </div>            <div className="relative">
@@ -417,14 +417,14 @@ const Index = () => {
       </section>
 
       {/* Featured Freelancers */}
-      <section className="py-20 bg-white">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Top Freelancers Ready to Work on TheGigUp</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Top Freelancers Ready to Work on TheGigUp</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
               Browse through our curated list of skilled professionals and find the perfect match for your project on TheGigUp marketplace
             </p>
-          </div>          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          </div>          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
             {isLoadingFreelancers ? (
               // Loading state
               Array.from({ length: 5 }).map((_, index) => (
@@ -509,7 +509,7 @@ const Index = () => {
                 </Card>
               ))
             )}
-          </div>          <div className="text-center mt-12">
+          </div>          <div className="text-center mt-6 sm:mt-8 md:mt-12">
             <Link to="/find-talent">
               <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
                 View All Freelancers
@@ -519,16 +519,16 @@ const Index = () => {
           </div>
         </div>
       </section>      {/* Featured Projects */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Featured Projects on TheGigUp</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Featured Projects on TheGigUp</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
               Discover amazing project opportunities from verified clients on TheGigUp. Start your freelancing journey today.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {isLoadingProjects ? (
               // Loading state
               Array.from({ length: 6 }).map((_, index) => (
@@ -644,7 +644,7 @@ const Index = () => {
           </div>
         </div>
       </section>      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-blue-600">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
             {userLoggedIn ? (

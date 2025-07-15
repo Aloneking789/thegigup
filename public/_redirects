@@ -1,0 +1,25 @@
+# Netlify redirects file for TheGigUp
+# Handles SEO issues and proper redirects
+
+# 1. FORCE HTTPS and WWW
+http://thegigup.com/* https://www.thegigup.com/:splat 301!
+https://thegigup.com/* https://www.thegigup.com/:splat 301!
+http://www.thegigup.com/* https://www.thegigup.com/:splat 301!
+
+# 2. HANDLE SIGNUP QUERY PARAMETERS (canonical URLs)
+/signup?type=client /signup 301
+/signup?type=freelancer /signup 301
+
+# 3. BLOCK API SUBDOMAIN
+https://api.thegigup.com/* /404 404
+
+# 4. SPA FALLBACK (React Router)
+/*    /index.html   200
+
+# 5. SECURITY HEADERS
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-XSS-Protection: 1; mode=block
